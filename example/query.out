@@ -1,0 +1,256 @@
+(
+   {SELECT 
+   :distinctClause <> 
+   :intoClause <> 
+   :targetList (
+      {RESTARGET 
+      :name <> 
+      :indirection <> 
+      :val 
+         {COLUMNREF 
+         :fields ("queries" "classification")
+         :location 8
+         }
+      :location 8
+      }
+      {RESTARGET 
+      :name collected_at 
+      :indirection <> 
+      :val 
+         {FUNCCALL 
+         :funcname ("date_part")
+         :args (
+            {COLUMNREF 
+            :fields ("placeholder")
+            :location 42
+            }
+            {COLUMNREF 
+            :fields ("s" "collected_at")
+            :location 55
+            }
+         )
+         :agg_order <> 
+         :agg_filter <> 
+         :agg_within_group false 
+         :agg_star false 
+         :agg_distinct false 
+         :func_variadic false 
+         :over <> 
+         :location 32
+         }
+      :location 32
+      }
+      {RESTARGET 
+      :name avg 
+      :indirection <> 
+      :val 
+         {AEXPR  
+         :name ("/")
+         :lexpr 
+            {FUNCCALL 
+            :funcname ("sum")
+            :args (
+               {COLUMNREF 
+               :fields ("total_time")
+               :location 92
+               }
+            )
+            :agg_order <> 
+            :agg_filter <> 
+            :agg_within_group false 
+            :agg_star false 
+            :agg_distinct false 
+            :func_variadic false 
+            :over <> 
+            :location 88
+            }
+         :rexpr 
+            {FUNCCALL 
+            :funcname ("sum")
+            :args (
+               {COLUMNREF 
+               :fields ("calls")
+               :location 110
+               }
+            )
+            :agg_order <> 
+            :agg_filter <> 
+            :agg_within_group false 
+            :agg_star false 
+            :agg_distinct false 
+            :func_variadic false 
+            :over <> 
+            :location 106
+            }
+         :location 104
+         }
+      :location 88
+      }
+   )
+   :fromClause (
+      {JOINEXPR 
+      :jointype 0 
+      :isNatural false 
+      :larg 
+         {JOINEXPR 
+         :jointype 0 
+         :isNatural false 
+         :larg 
+            {RANGEVAR 
+            :schemaname <> 
+            :relname snapshots 
+            :inhOpt 2 
+            :relpersistence p 
+            :alias 
+               {ALIAS 
+               :aliasname s 
+               :colnames <>
+               }
+            :location 131
+            }
+         :rarg 
+            {RANGEVAR 
+            :schemaname <> 
+            :relname query_snapshots 
+            :inhOpt 2 
+            :relpersistence p 
+            :alias <> 
+            :location 148
+            }
+         :usingClause <> 
+         :quals 
+            {AEXPR  
+            :name ("=")
+            :lexpr 
+               {COLUMNREF 
+               :fields ("snapshot_id")
+               :location 170
+               }
+            :rexpr 
+               {COLUMNREF 
+               :fields ("s" "id")
+               :location 184
+               }
+            :location 182
+            }
+         :alias <> 
+         :rtindex 0
+         }
+      :rarg 
+         {RANGEVAR 
+         :schemaname <> 
+         :relname queries 
+         :inhOpt 2 
+         :relpersistence p 
+         :alias <> 
+         :location 195
+         }
+      :usingClause <> 
+      :quals 
+         {AEXPR  
+         :name ("=")
+         :lexpr 
+            {COLUMNREF 
+            :fields ("query_snapshots" "query_id")
+            :location 209
+            }
+         :rexpr 
+            {COLUMNREF 
+            :fields ("queries" "id")
+            :location 236
+            }
+         :location 234
+         }
+      :alias <> 
+      :rtindex 0
+      }
+   )
+   :whereClause 
+      {AEXPR AND 
+      :lexpr 
+         {AEXPR  
+         :name ("=")
+         :lexpr 
+            {COLUMNREF 
+            :fields ("s" "database_id")
+            :location 256
+            }
+         :rexpr 
+            {COLUMNREF 
+            :fields ("placeholder")
+            :location 272
+            }
+         :location 270
+         }
+      :rexpr 
+         {AEXPR AND 
+         :lexpr 
+            {AEXPR  
+            :name (">=")
+            :lexpr 
+               {COLUMNREF 
+               :fields ("s" "collected_at")
+               :location 288
+               }
+            :rexpr 
+               {COLUMNREF 
+               :fields ("placeholder")
+               :location 311
+               }
+            :location 303
+            }
+         :rexpr 
+            {AEXPR  
+            :name ("\<=")
+            :lexpr 
+               {COLUMNREF 
+               :fields ("s" "collected_at")
+               :location 288
+               }
+            :rexpr 
+               {COLUMNREF 
+               :fields ("placeholder")
+               :location 327
+               }
+            :location 303
+            }
+         :location 303
+         }
+      :location 284
+      }
+   :groupClause (
+      {COLUMNREF 
+      :fields ("queries" "classification")
+      :location 350
+      }
+      {COLUMNREF 
+      :fields ("collected_at")
+      :location 374
+      }
+   )
+   :havingClause <> 
+   :windowClause <> 
+   :valuesLists <> 
+   :sortClause (
+      {SORTBY 
+      :node 
+         {COLUMNREF 
+         :fields ("collected_at")
+         :location 398
+         }
+      :sortby_dir 0 
+      :sortby_nulls 0 
+      :useOp <> 
+      :location -1
+      }
+   )
+   :limitOffset <> 
+   :limitCount <> 
+   :lockingClause <> 
+   :withClause <> 
+   :op 0 
+   :all false 
+   :larg <> 
+   :rarg <>
+   }
+)
