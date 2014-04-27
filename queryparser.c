@@ -34,14 +34,12 @@ bool do_parse(const char* query)
 
 	if (tree != NULL)
 	{
-		char *s, *f;
+		char *s;
 		s = nodeToString(tree);
-		f = pretty_format_node_dump(s);
 
-		printf("%s\n", f);
+		printf("%s\n", s);
 
 		pfree(s);
-		pfree(f);
 	}
 
 	MemoryContextSwitchTo(TopMemoryContext);
@@ -50,7 +48,7 @@ bool do_parse(const char* query)
 	return (tree != NULL);
 }
 
-#define BUFSIZE 16384
+#define BUFSIZE 32768
 
 int main(int argc, char **argv)
 {
