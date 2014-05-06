@@ -13,7 +13,7 @@ cd ..
 ./build.sh
 
 # Test it :)
-echo 'SELECT 1' | queryparser
+echo 'SELECT 1' | ./queryparser
 ```
 
 The built queryparser binary is standalone and works without any PostgreSQL libraries existing or server running.
