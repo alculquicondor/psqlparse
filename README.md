@@ -1,12 +1,26 @@
-To get things running:
+To get things running, run the following in a checkout of this repo:
 
- * git clone git://git.postgresql.org/git/postgresql.git
- * cd ~postgresql
- * ./configure
- * make
- * cd src/backend
 ```
-gcc -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -L../../src/port -L../../src/common -I ../include ../../../queryparser/queryparser.c `find . -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalreceiver|conversion_procs)' | xargs echo` ../timezone/localtime.o ../timezone/strftime.o ../timezone/pgtz.o ../common/libpgcommon_srv.a ../port/libpgport_srv.a -lm -o /tmp/queryparser -lrt -ldl
+# Build PostgreSQL
+git clone --shallow https://github.com/pganalyze/postgres.git postgresql
+
+cd postgresql
+./configure
+make
+cd ..
+
+# Build Queryparser binary
+./build.sh
+
+# Test it :)
+echo 'SELECT 1' | queryparser
 ```
- * on os x remove -lrt and -ldl
- * echo 'SELECT 1' | /tmp/queryparser
+
+The built queryparser binary is standalone and works without any PostgreSQL libraries existing or server running.
+
+Note: We use a patched version of PostgreSQL (as referenced above) with changes to outfuncs.c that:
+
+* Add support for INSERT/DELETE/UPDATE statements
+* Add length information to constants
+
+It is recommended you use it as well.
