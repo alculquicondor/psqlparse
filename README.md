@@ -18,9 +18,4 @@ echo 'SELECT 1' | ./queryparser
 
 The built queryparser binary is standalone and works without any PostgreSQL libraries existing or server running.
 
-Note: We use a patched version of PostgreSQL (as referenced above) with changes to outfuncs.c that:
-
-* Add support for INSERT/DELETE/UPDATE statements
-* Add length information to constants
-
-It is recommended you use it as well.
+**Note:** We use a patched version of PostgreSQL, [with improvements to outfuncs.c](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...more-outfuncs).
