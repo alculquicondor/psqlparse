@@ -2,7 +2,7 @@ To get things running, run the following in a checkout of this repo:
 
 ```
 # Build PostgreSQL
-git clone --shallow https://github.com/pganalyze/postgres.git postgresql
+git clone --depth 1 https://github.com/pganalyze/postgres.git postgresql
 
 cd postgresql
 ./configure
