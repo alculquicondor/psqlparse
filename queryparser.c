@@ -57,6 +57,13 @@ int main(int argc, char **argv)
 	char* p_nl;
 	MemoryContextInit();
 
+	if (argc > 1 && 
+		(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0))
+	{
+		printf("Parse SQL query from stdin\nUSAGE: queryparser\nOPTIONS:\n\t--json: Output in JSON format\n\t--help: Show this help\n");
+		return 0;
+	}
+
 	if (!fgets(line, BUFSIZE, stdin))
 		return 2;  /* no data read */
 
@@ -70,12 +77,6 @@ int main(int argc, char **argv)
 	if (line[0] == '#' || line[0] == '\0')
 		return 1;
 
-	if (argc > 1 && 
-		(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0))
-	{
-		pritnf("USAGE: queryparser\nOPTIONS:\n\t--json: Output in JSON format\n\t--help: Show this help\n");
-		return 0;
-	}
 	if (argc > 1 && strcmp(argv[1], "--json") == 0)
 	{
 		return do_parse(line, &nodeToJSONString) ? 0 : 1;
