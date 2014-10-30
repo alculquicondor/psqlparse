@@ -35,7 +35,7 @@ bool do_parse(const char* query)
 	if (tree != NULL)
 	{
 		char *s;
-		s = nodeToString(tree);
+		s = nodeToJSONString(tree);
 
 		printf("%s\n", s);
 

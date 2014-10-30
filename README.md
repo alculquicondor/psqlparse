@@ -1,3 +1,5 @@
+This fork outputs in JSON using nodeToJSONString from the patched version of PostgreSQL rather than the output of nodeToString.
+
 To get things running, run the following in a checkout of this repo:
 
 ```
