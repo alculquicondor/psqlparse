@@ -16,9 +16,9 @@
 #include <unistd.h>
 
 const char* progname = "testit";
-bool do_parse(const char* query);
+bool do_parse(const char* query, char* (*str_fun)(const void*) );
 
-bool do_parse(const char* query)
+bool do_parse(const char* query, char* (*str_fun)(const void*) )
 {
 	MemoryContext ctx = NULL;
 	List *tree;
@@ -35,7 +35,8 @@ bool do_parse(const char* query)
 	if (tree != NULL)
 	{
 		char *s;
-		s = nodeToJSONString(tree);
+		//s = nodeToJSONString(tree);
+		s = str_fun(tree);
 
 		printf("%s\n", s);
 
@@ -69,7 +70,12 @@ int main(int argc, char **argv)
 	if (line[0] == '#' || line[0] == '\0')
 		return 1;
 
-	do_parse(line);
+	if (argc > 1 && strcmp(argv[1], "--json") == 0)
+	{
+		do_parse(line, &nodeToJSONString);
+		return 0;
+	}
+	do_parse(line, &nodeToString);
 
 	return 0;
 }
