@@ -72,10 +72,7 @@ int main(int argc, char **argv)
 
 	if (argc > 1 && strcmp(argv[1], "--json") == 0)
 	{
-		do_parse(line, &nodeToJSONString);
-		return 0;
+		return do_parse(line, &nodeToJSONString) ? 0 : 1;
 	}
-	do_parse(line, &nodeToString);
-
-	return 0;
+	return do_parse(line, &nodeToString) ? 0 : 1;
 }
