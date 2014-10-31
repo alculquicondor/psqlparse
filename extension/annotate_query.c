@@ -22,11 +22,6 @@ annotate_query(PG_FUNCTION_ARGS)
 
 	sql = text_to_cstring(sql_t);
 	tree = raw_parser(sql);
-	/*out = nodeToString(tree);
-
-	if (pretty_b) {
-		out = pretty_format_node_dump(out);
-	}*/
 
 	out = nodeToJSONString(tree);
 
