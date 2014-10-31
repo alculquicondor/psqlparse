@@ -26,18 +26,16 @@ The built queryparser binary is standalone and works without any PostgreSQL libr
 Usage
 -----
 
-```
+```shell
 # Parse a query into Postgres' internal format
+echo 'SELECT 1' | ./queryparser
 
-> echo 'SELECT 1' | ./queryparser
-
-({SELECT :distinctClause <> :intoClause <> :targetList ({RESTARGET :name <> :indirection <> :val {A_CONST :val 1 :location 7} :location 7}) :fromClause <> :whereClause <> :groupClause <> :havingClause <> :windowClause <> :valuesLists <> :sortClause <> :limitOffset <> :limitCount <> :lockingClause <> :withClause <> :op 0 :all false :larg <> :rarg <>})
+# ({SELECT :distinctClause <> :intoClause <> :targetList ({RESTARGET :name <> :indirection <> :val {A_CONST :val 1 :location 7} :location 7}) :fromClause <> :whereClause <> :groupClause <> :havingClause <> :windowClause <> :valuesLists <> :sortClause <> :limitOffset <> :limitCount <> :lockingClause <> :withClause <> :op 0 :all false :larg <> :rarg <>})
 
 # Parse a query into JSON
+echo 'SELECT 1' | ./queryparser --json
 
-> echo 'SELECT 1' | ./queryparser --json
-
-[{"SELECT": {"distinctClause": null, "intoClause": null, "targetList": [{"RESTARGET": {"name": null, "indirection": null, "val": {"A_CONST": {"val": 1, "location": 7}}, "location": 7}}], "fromClause": null, "whereClause": null, "groupClause": null, "havingClause": null, "windowClause": null, "valuesLists": null, "sortClause": null, "limitOffset": null, "limitCount": null, "lockingClause": null, "withClause": null, "op": 0, "all": false, "larg": null, "rarg": null}}]
+# [{"SELECT": {"distinctClause": null, "intoClause": null, "targetList": [{"RESTARGET": {"name": null, "indirection": null, "val": {"A_CONST": {"val": 1, "location": 7}}, "location": 7}}], "fromClause": null, "whereClause": null, "groupClause": null, "havingClause": null, "windowClause": null, "valuesLists": null, "sortClause": null, "limitOffset": null, "limitCount": null, "lockingClause": null, "withClause": null, "op": 0, "all": false, "larg": null, "rarg": null}}]
 ```
 
 Contributors
