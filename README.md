@@ -1,3 +1,5 @@
+This fork adds the --json switch which outputs the parse tree in JSON instead of the raw parse tree.
+
 To get things running, run the following in a checkout of this repo:
 
 ```
@@ -14,6 +16,9 @@ cd ..
 
 # Test it :)
 echo 'SELECT 1' | ./queryparser
+
+# Test it with JSON 
+echo 'SELECT 1' | ./queryparser --json
 ```
 
 The built queryparser binary is standalone and works without any PostgreSQL libraries existing or server running.

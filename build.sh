@@ -7,7 +7,7 @@ CPPFLAGS="-O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-sta
 
 LIBFLAGS="-lm"
 if [ `uname` != "Darwin" ]; then
-	LIBFLAGS+="-lrt -ldl"
+	LIBFLAGS+=" -lrt -ldl"
 fi
 
 OBJFILES=`find backend -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalreceiver|conversion_procs)' | xargs echo`
