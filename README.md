@@ -6,7 +6,7 @@ Installation
 
 To get things running, run the following in a checkout of this repo:
 
-```
+```shell
 # Build PostgreSQL
 git clone --depth 1 https://github.com/pganalyze/postgres.git postgresql
 
