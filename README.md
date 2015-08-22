@@ -15,7 +15,7 @@ CFLAGS=-fPIC ./configure
 make
 cd ..
 
-# Build Queryparser shared library
+# Build Queryparser static library
 ./build.sh
 ```
 
