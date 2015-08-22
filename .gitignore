@@ -1,6 +1,7 @@
 postgresql/
 *.o
 *.so
+*.a
 psqlparse.c
 build/
 dist/

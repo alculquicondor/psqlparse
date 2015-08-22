@@ -12,11 +12,7 @@ fi
 
 OBJFILES=`find backend -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalreceiver|conversion_procs)' | xargs echo`
 OBJFILES+=" timezone/localtime.o timezone/strftime.o timezone/pgtz.o"
-OBJFILES+=" common/libpgcommon_srv.a port/libpgport_srv.a"
 
 gcc -c -fPIC $CPPFLAGS -I include ../../queryparser.c -o ../../queryparser.o
 
-gcc -Lport -Lcommon ../../queryparser.o $OBJFILES $LIBFLAGS -shared -o ../../libqueryparser.so
-
-cd ../..
-cp libqueryparser.so psqlparse
+ar rcs ../../libqueryparser.a $OBJFILES ../../queryparser.o
