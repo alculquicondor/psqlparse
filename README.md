@@ -21,6 +21,14 @@ cd ..
 
 The built queryparser binary is standalone and works without any PostgreSQL libraries existing or server running.
 
+If you also want to build and install the python module:
+
+```shell
+# load your virtualenv
+cd psqlparse
+python setup.py install
+```
+
 **Note:** We use a patched version of PostgreSQL, [with improvements to outfuncs.c](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...pg_query).
 
 Contributors
