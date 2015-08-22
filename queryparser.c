@@ -1,27 +1,21 @@
-#include "postgres.h"
-
+#include <string.h>
 #include <ctype.h>
 #include <float.h>
 #include <math.h>
 #include <limits.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "utils/memutils.h"
+#include <assert.h>
 
-#include "parser/parser.h"
-#include "nodes/print.h"
+#include "queryparser.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 const char* progname = "queryparser";
-bool do_parse(const char* query, char* (*output_fnc)(const void*) );
-
-bool do_parse(const char* query, char* (*output_fnc)(const void*) )
+int do_parse(const char* query, char** output)
 {
-	MemoryContext ctx = NULL;
+	MemoryContext ctx;
 	List *tree;
+	int error = 1;
 
 	ctx = AllocSetContextCreate(TopMemoryContext,
 								"RootContext",
@@ -30,55 +24,34 @@ bool do_parse(const char* query, char* (*output_fnc)(const void*) )
 								ALLOCSET_DEFAULT_MAXSIZE);
 	MemoryContextSwitchTo(ctx);
 
-	tree = raw_parser(query);
-
-	if (tree != NULL)
+	PG_TRY();
 	{
-		char *s;
-		s = output_fnc(tree);
+		tree = raw_parser(query);
 
-		printf("%s\n", s);
-
-		pfree(s);
+		if (tree != NULL)
+		{
+			char* t = nodeToJSONString(tree);
+			*output = (char*) malloc(strlen(t) + 1);
+			strcpy(*output, t);
+			pfree(t);
+			error = 0;
+		}
 	}
+	PG_CATCH();
+	{
+		ErrorData* error = CopyErrorData();
+		*output = (char *) malloc(strlen(error->message) + 10);
+		sprintf(*output, "%s (pos:%d)", error->message, error->cursorpos);
+	}
+	PG_END_TRY();
+
 
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 
-	return (tree != NULL);
+	return error;
 }
 
-#define BUFSIZE 32768
-
-int main(int argc, char **argv)
-{
-	char  line[BUFSIZE];
-	char* p_nl;
+void __attribute__ ((constructor)) init() {
 	MemoryContextInit();
-
-	if (argc > 1 &&
-		(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0))
-	{
-		printf("Parse SQL query from stdin\nUSAGE: queryparser\nOPTIONS:\n\t--json: Output in JSON format\n\t--help: Show this help\n");
-		return 0;
-	}
-
-	if (!fgets(line, BUFSIZE, stdin))
-		return 2;  /* no data read */
-
-	p_nl = strchr(line, (int) '\n');
-	if (p_nl != NULL) {
-		*(p_nl) = '\0';
-	} else {
-		return 3; /* no newline */
-	}
-
-	if (line[0] == '#' || line[0] == '\0')
-		return 1;
-
-	if (argc > 1 && strcmp(argv[1], "--json") == 0)
-	{
-		return do_parse(line, &nodeToJSONString) ? 0 : 1;
-	}
-	return do_parse(line, &nodeToString) ? 0 : 1;
 }

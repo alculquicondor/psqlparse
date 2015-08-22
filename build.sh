@@ -14,4 +14,6 @@ OBJFILES=`find backend -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalre
 OBJFILES+=" timezone/localtime.o timezone/strftime.o timezone/pgtz.o"
 OBJFILES+=" common/libpgcommon_srv.a port/libpgport_srv.a"
 
-gcc $CPPFLAGS -Lport -Lcommon -I include ../../queryparser.c $OBJFILES $LIBFLAGS -o ../../queryparser
+gcc -c -fPIC $CPPFLAGS -I include ../../queryparser.c -o ../../queryparser.o
+
+gcc -Lport -Lcommon ../../queryparser.o $OBJFILES $LIBFLAGS -shared -o ../../libqueryparser.so
