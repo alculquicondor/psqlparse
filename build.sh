@@ -17,3 +17,6 @@ OBJFILES+=" common/libpgcommon_srv.a port/libpgport_srv.a"
 gcc -c -fPIC $CPPFLAGS -I include ../../queryparser.c -o ../../queryparser.o
 
 gcc -Lport -Lcommon ../../queryparser.o $OBJFILES $LIBFLAGS -shared -o ../../libqueryparser.so
+
+cd ../..
+cp libqueryparser.so psqlparse

@@ -3,4 +3,6 @@ postgresql/
 *.so
 psqlparse.c
 build/
+dist/
 .idea/
+MANIFEST

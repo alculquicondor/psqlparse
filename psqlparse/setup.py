@@ -4,14 +4,20 @@ from Cython.Build import cythonize
 
 import os.path
 
-__dir__ = os.path.dirname(os.path.realpath(__file__))
-main_dir = os.path.join(__dir__, '..')
+main_dir = '..'
 postgres_includes = os.path.join(main_dir, 'postgresql/src/include')
 
-setup(ext_modules=cythonize([
-    Extension('psqlparse',
-              ['psqlparse.pyx'],
-              libraries=['queryparser'],
-              include_dirs=[main_dir, postgres_includes],
-              library_dirs=[main_dir])
-]))
+setup(name='psqlparse',
+      version='0.1',
+      url='https://github.com/alculquicondor/queryparser',
+      author='Aldo Culquicondor',
+      author_email='aldo@amigocloud.com',
+      license='BSD',
+      ext_modules=cythonize([
+          Extension('psqlparse',
+                    ['psqlparse.pyx'],
+                    libraries=['queryparser'],
+                    include_dirs=[main_dir, postgres_includes],
+                    library_dirs=[main_dir])
+      ]),
+      data_files=[('lib', ['libqueryparser.so'])])
