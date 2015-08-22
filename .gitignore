@@ -1,0 +1,6 @@
+postgresql/
+*.o
+*.so
+psqlparse.c
+build/
+.idea/
