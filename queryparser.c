@@ -1,11 +1,4 @@
 #include <string.h>
-#include <ctype.h>
-#include <float.h>
-#include <math.h>
-#include <limits.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <assert.h>
 
 #include "queryparser.h"
 
