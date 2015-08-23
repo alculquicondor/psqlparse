@@ -1,0 +1,4 @@
+include queryparser.h libqueryparser.a \
+        postgresql/src/common/libpgcommon_srv.a \
+        postgresql/src/port/libpgport_srv.a
+recursive-include postgresql/src/include *.h

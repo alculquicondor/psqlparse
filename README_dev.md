@@ -1,4 +1,4 @@
-queryparser
+psqlparse
 ===========
 
 Installation
@@ -25,7 +25,6 @@ If you also want to build and install the python module:
 
 ```shell
 # load your virtualenv
-cd psqlparse
 python setup.py install
 ```
 
