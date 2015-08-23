@@ -1,5 +1,4 @@
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup, Extension
 from Cython.Build import cythonize
 
 import os.path
@@ -23,5 +22,4 @@ setup(name='psqlparse',
                     library_dirs=[main_dir,
                                   os.path.join(postgres_src, 'port'),
                                   os.path.join(postgres_src, 'common')])
-      ]),
-      data_files=[('lib', ['libqueryparser.so'])])
+      ]))
