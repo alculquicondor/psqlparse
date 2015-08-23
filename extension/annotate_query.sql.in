@@ -1,6 +1,0 @@
-SET search_path = public;
-
-CREATE OR REPLACE FUNCTION annotate_query(query text, pretty_print bool DEFAULT false)
-RETURNS text
-AS 'MODULE_PATHNAME','annotate_query'
-LANGUAGE C IMMUTABLE STRICT;
