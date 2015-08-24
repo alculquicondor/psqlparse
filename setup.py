@@ -48,6 +48,5 @@ setup(name='psqlparse',
       author_email='aldo@amigocloud.com',
       description='Parse SQL queries using the PostgreSQL query parser',
       license='BSD',
-      platforms=['linux-x86_64'],
       cmdclass={'build_ext': PSqlParseBuildExt},
       ext_modules=extensions)
