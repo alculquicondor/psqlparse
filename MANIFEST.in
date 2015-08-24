@@ -1,3 +1,8 @@
-include README.md \
-        queryparser.h queryparser.c pre_build.sh \
+include README.md LICENSE \
         queryparser.pxd psqlparse.pyx
+
+include queryparser/build.sh \
+        queryparser/LICENSE \
+        queryparser/queryparser.c \
+        queryparser/queryparser.h \
+        queryparser/README.md

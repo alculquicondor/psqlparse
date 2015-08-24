@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [ -f libqueryparser.a ]; then
+if [ -f queryparser/libqueryparser.a ]; then
 	exit 0
 fi
 
@@ -26,6 +26,6 @@ fi
 OBJFILES=`find backend -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalreceiver|conversion_procs)' | xargs echo`
 OBJFILES+=" timezone/localtime.o timezone/strftime.o timezone/pgtz.o"
 
-gcc -c -fPIC $CPPFLAGS -I include ../../queryparser.c -o ../../queryparser.o
+gcc -c -fPIC $CPPFLAGS -I include ../../queryparser/queryparser.c -o ../../queryparser/queryparser.o
 
-ar rcs ../../libqueryparser.a $OBJFILES ../../queryparser.o
+ar rcs ../../queryparser/libqueryparser.a $OBJFILES ../../queryparser/queryparser.o
