@@ -10,9 +10,9 @@ fi
 
 cd postgresql
 
-CFLAGS=-fPIC ./configure
+CFLAGS=-fPIC ./configure || exit $?
 
-make
+make || exit $?
 
 cd src
 

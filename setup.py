@@ -3,12 +3,18 @@ from setuptools.command.build_ext import build_ext
 import os
 import os.path
 import subprocess
+import sys
 
 
 class PSqlParseBuildExt(build_ext):
 
     def run(self):
-        subprocess.call(['./queryparser/build.sh'])
+        return_code = subprocess.call(['./queryparser/build.sh'])
+        if return_code:
+            sys.stderr.write('''
+An error occurred during extension building.
+Make sure you have bison and flex installed on your system.''')
+            sys.exit(return_code)
         build_ext.run(self)
 
 
@@ -36,7 +42,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.1.2',
+      version='0.1.3',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
