@@ -36,7 +36,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.1',
+      version='0.1.1',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
