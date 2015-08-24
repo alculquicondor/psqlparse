@@ -4,6 +4,7 @@ import os
 import os.path
 import subprocess
 import sys
+import platform
 
 
 class PSqlParseBuildExt(build_ext):
@@ -13,7 +14,8 @@ class PSqlParseBuildExt(build_ext):
         if return_code:
             sys.stderr.write('''
 An error occurred during extension building.
-Make sure you have bison and flex installed on your system.''')
+Make sure you have bison and flex installed on your system.
+''')
             sys.exit(return_code)
         build_ext.run(self)
 
@@ -26,11 +28,14 @@ queryparser_src = os.path.join('.', 'queryparser')
 postgres_src = os.path.join('.', 'postgresql', 'src')
 postgres_includes = os.path.join(postgres_src, 'include')
 
+libraries=['queryparser', 'pgcommon_srv', 'pgport_srv']
+if platform.uname()[0] != 'Darwin':
+    libraries.append('rt')
+
 extensions = [
     Extension('psqlparse',
               ['psqlparse' + ext],
-              libraries=['queryparser', 'rt', 'pgcommon_srv',
-                         'pgport_srv'],
+              libraries=libraries,
               include_dirs=[queryparser_src, postgres_includes],
               library_dirs=[queryparser_src,
                             os.path.join(postgres_src, 'port'),
@@ -42,7 +47,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.1.3',
+      version='0.1.4',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
