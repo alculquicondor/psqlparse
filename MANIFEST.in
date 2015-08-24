@@ -1,4 +1,3 @@
-include queryparser.h libqueryparser.a \
-        postgresql/src/common/libpgcommon_srv.a \
-        postgresql/src/port/libpgport_srv.a
-recursive-include postgresql/src/include *.h
+include README.md \
+        queryparser.h queryparser.c pre_build.sh \
+        queryparser.pxd psqlparse.pyx

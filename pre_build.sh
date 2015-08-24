@@ -1,6 +1,19 @@
 #!/bin/bash -e
 
+if [ -f libqueryparser.a ]; then
+	exit 0
+fi
+
+if [ ! -d postgresql ]; then
+	git clone --depth 1 https://github.com/pganalyze/postgres.git postgresql
+fi
+
 cd postgresql
+
+CFLAGS=-fPIC ./configure
+
+make
+
 cd src
 
 CPPFLAGS="-O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv"

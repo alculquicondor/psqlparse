@@ -1,6 +1,16 @@
 from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 import os
 import os.path
+import subprocess
+
+
+class PSqlParseBuildExt(build_ext):
+
+    def run(self):
+        subprocess.call(['./pre_build.sh'])
+        build_ext.run(self)
+
 
 USE_CYTHON = bool(os.environ.get('USE_CYTHON'))
 
@@ -25,7 +35,6 @@ if USE_CYTHON:
     from Cython.Build import cythonize
     extensions = cythonize(extensions)
 
-
 setup(name='psqlparse',
       version='0.1',
       url='https://github.com/alculquicondor/queryparser',
@@ -34,4 +43,5 @@ setup(name='psqlparse',
       description='Parse SQL queries using the PostgreSQL query parser',
       license='BSD',
       platforms=['linux-x86_64'],
+      cmdclass={'build_ext': PSqlParseBuildExt},
       ext_modules=extensions)
