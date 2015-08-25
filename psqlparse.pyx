@@ -109,9 +109,14 @@ class Statement(object):
         return s
 
 
-def parse(char* query):
+def parse(query):
     cdef char* output = NULL
-    cdef bint error = do_parse(query, &output)
+    cdef bint error
+    cdef str encoded_query
+
+    encoded_query = query.encode('utf8') if isinstance(query, unicode)\
+        else str(query)
+    error = do_parse(encoded_query, &output)
 
     if error:
         result = str(output)

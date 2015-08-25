@@ -28,7 +28,7 @@ queryparser_src = os.path.join('.', 'queryparser')
 postgres_src = os.path.join('.', 'postgresql', 'src')
 postgres_includes = os.path.join(postgres_src, 'include')
 
-libraries=['queryparser', 'pgcommon_srv', 'pgport_srv']
+libraries = ['queryparser', 'pgcommon_srv', 'pgport_srv']
 if platform.uname()[0] != 'Darwin':
     libraries.append('rt')
 
@@ -47,7 +47,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.1.4',
+      version='0.1.5',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
