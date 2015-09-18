@@ -9,8 +9,11 @@ class PSqlParseError(Exception):
     def __init__(self, value):
         self.value = value
 
+    def __unicode__(self):
+        return self.value
+
     def __str__(self):
-        return repr(self.value)
+        return self.value.encode('utf8')
 
 
 class TargetList(object):
@@ -119,11 +122,11 @@ def parse(query):
     error = do_parse(encoded_query, &output)
 
     if error:
-        result = str(output)
+        result = output.decode('utf8')
         free(output)
         raise PSqlParseError(result)
 
-    result = [Statement(x) for x in json.loads(output)]
+    result = [Statement(x) for x in json.loads(output, strict=False)]
     free(output)
 
     return result
