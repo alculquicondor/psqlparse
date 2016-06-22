@@ -117,7 +117,7 @@ def parse(query):
 
     if isinstance(query, six.text_type):
         encoded_query = query.encode('utf8')
-    elif isinstance(query, six.binary_types):
+    elif isinstance(query, six.binary_type):
         encoded_query = query
     else:
         encoded_query = six.text_type(query).encode('utf8')
