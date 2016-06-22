@@ -1,20 +1,18 @@
+import six
 from queryparser cimport do_parse
 from libc.stdlib cimport free
 
 import json
 
 
+@six.python_2_unicode_compatible
 class PSqlParseError(Exception):
 
     def __init__(self, value):
         self.value = value
 
-    def __unicode__(self):
-        return self.value
-
     def __str__(self):
-        return self.value.encode('utf8')
-
+        return self.value
 
 class TargetList(object):
 
@@ -46,7 +44,7 @@ class WhereClause(object):
         self.obj = obj
 
     def __repr__(self):
-        return '<WhereClause (%s)>' % self.obj.iterkeys().next()
+        return '<WhereClause (%s)>' % six.next(six.iterkeys(self.obj))
 
     def __str__(self):
         return 'WHERE []'
@@ -71,7 +69,7 @@ class WithClause(object):
             s += 'RECURSIVE '
         s += ', '.join([
             '%s AS (%s)' % (name, query)
-            for name, query in self.queries.iteritems()
+            for name, query in six.iteritems(self.queries)
         ])
         return s
 
@@ -79,8 +77,8 @@ class WithClause(object):
 class Statement(object):
 
     def __init__(self, obj):
-        self.type = obj.iterkeys().next()
-        self._obj = obj.itervalues().next()
+        self.type = six.next(six.iterkeys(obj))
+        self._obj = six.next(six.itervalues(obj))
         self.from_clause = FromClause(self._obj.get('fromClause'))\
             if self._obj.get('fromClause') else None
         self.target_list = TargetList(self._obj.get('targetList'))\
@@ -115,10 +113,14 @@ class Statement(object):
 def parse(query):
     cdef char* output = NULL
     cdef bint error
-    cdef str encoded_query
+    cdef bytes encoded_query
 
-    encoded_query = query.encode('utf8') if isinstance(query, unicode)\
-        else str(query)
+    if isinstance(query, six.text_type):
+        encoded_query = query.encode('utf8')
+    elif isinstance(query, six.binary_types):
+        encoded_query = query
+    else:
+        encoded_query = six.text_type(query).encode('utf8')
     error = do_parse(encoded_query, &output)
 
     if error:
@@ -126,7 +128,7 @@ def parse(query):
         free(output)
         raise PSqlParseError(result)
 
-    result = [Statement(x) for x in json.loads(output, strict=False)]
+    result = [Statement(x) for x in json.loads(output.decode('utf8'), strict=False)]
     free(output)
 
     return result
