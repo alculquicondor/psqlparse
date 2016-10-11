@@ -1,16 +1,14 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import os
 import os.path
 import subprocess
 import sys
-import platform
 
 
 class PSqlParseBuildExt(build_ext):
 
     def run(self):
-        return_code = subprocess.call(['./queryparser/build.sh'])
+        return_code = subprocess.call(['./build_libpg_query.sh'])
         if return_code:
             sys.stderr.write('''
 An error occurred during extension building.
@@ -24,22 +22,16 @@ USE_CYTHON = bool(os.environ.get('USE_CYTHON'))
 
 ext = '.pyx' if USE_CYTHON else '.c'
 
-queryparser_src = os.path.join('.', 'queryparser')
-postgres_src = os.path.join('.', 'postgresql', 'src')
-postgres_includes = os.path.join(postgres_src, 'include')
+libpg_query = os.path.join('.', 'libpg_query')
 
-libraries = ['queryparser', 'pgcommon_srv', 'pgport_srv']
-if platform.uname()[0] != 'Darwin':
-    libraries.append('rt')
+libraries = ['pg_query']
 
 extensions = [
     Extension('psqlparse',
               ['psqlparse' + ext],
               libraries=libraries,
-              include_dirs=[queryparser_src, postgres_includes],
-              library_dirs=[queryparser_src,
-                            os.path.join(postgres_src, 'port'),
-                            os.path.join(postgres_src, 'common')])
+              include_dirs=[libpg_query],
+              library_dirs=[libpg_query])
 ]
 
 if USE_CYTHON:
@@ -47,7 +39,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.1.7',
+      version='0.2',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',

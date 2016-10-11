@@ -1,23 +1,27 @@
-import six
-from queryparser cimport do_parse
-from libc.stdlib cimport free
-
 import json
+
+import six
+
+from pg_query cimport (pg_query_parse, pg_query_free_parse_result,
+                      PgQueryParseResult)
 
 
 @six.python_2_unicode_compatible
 class PSqlParseError(Exception):
 
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, message, lineno, cursorpos):
+        self.message = message
+        self.lineno = lineno
+        self.cursorpos = cursorpos
 
     def __str__(self):
-        return self.value
+        return self.message
+
 
 class TargetList(object):
 
     def __init__(self, obj):
-        self.targets = [t['RESTARGET'] for t in obj]
+        self.targets = [t['ResTarget'] for t in obj]
 
     def __repr__(self):
         return '<TargetList (%d)>' % len(self.targets)
@@ -29,7 +33,7 @@ class TargetList(object):
 class FromClause(object):
 
     def __init__(self, obj):
-        self.relations = [r for r in obj]
+        self.relations = [r['RangeVar'] for r in obj]
 
     def __repr__(self):
         return '<FromClause (%d)>' % len(self.relations)
@@ -53,8 +57,9 @@ class WhereClause(object):
 class WithClause(object):
 
     def __init__(self, obj):
-        self.recursive = obj['WITHCLAUSE']['recursive']
-        ctes = [cte['COMMONTABLEEXPR'] for cte in obj['WITHCLAUSE']['ctes']]
+        self.recursive = obj['WithClause'].get('recursive')
+        ctes = ([cte['CommonTableExpr'] for cte in
+                 obj['WithClause']['ctes']])
         self.queries = {
             cte['ctename']: Statement(cte['ctequery'])
             for cte in ctes
@@ -111,9 +116,8 @@ class Statement(object):
 
 
 def parse(query):
-    cdef char* output = NULL
-    cdef bint error
     cdef bytes encoded_query
+    cdef PgQueryParseResult result
 
     if isinstance(query, six.text_type):
         encoded_query = query.encode('utf8')
@@ -121,14 +125,16 @@ def parse(query):
         encoded_query = query
     else:
         encoded_query = six.text_type(query).encode('utf8')
-    error = do_parse(encoded_query, &output)
 
-    if error:
-        result = output.decode('utf8')
-        free(output)
-        raise PSqlParseError(result)
+    result = pg_query_parse(encoded_query)
 
-    result = [Statement(x) for x in json.loads(output.decode('utf8'), strict=False)]
-    free(output)
+    if result.error:
+        error = PSqlParseError(result.error.message, result.error.lineno,
+                               result.error.cursorpos)
+        pg_query_free_parse_result(result)
+        raise error
 
-    return result
+    statements = [Statement(x) for x in
+                  json.loads(result.parse_tree.decode('utf8'), strict=False)]
+    pg_query_free_parse_result(result)
+    return statements

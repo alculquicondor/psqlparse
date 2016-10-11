@@ -1,8 +1,3 @@
 include README.md LICENSE \
-        queryparser.pxd psqlparse.pyx
-
-include queryparser/build.sh \
-        queryparser/LICENSE \
-        queryparser/queryparser.c \
-        queryparser/queryparser.h \
-        queryparser/README.md
+        pg_query.pxd psqlparse.pyx \
+        build_libpg_query.sh
