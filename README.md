@@ -1,7 +1,7 @@
 psqlparse
 =========
 
-This Python module  uses the actual PostgreSQL server source to parse SQL
+This Python module  uses the [libpg\_query](https://github.com/lfittl/libpg_query) to parse SQL
 queries and return the internal PostgreSQL parsetree.
 
 Installation
