@@ -1,4 +1,4 @@
-postgresql/
+libpg_query/
 *.o
 *.so
 *.a
@@ -6,5 +6,4 @@ psqlparse.c
 build/
 dist/
 .idea/
-MANIFEST
 *.egg-info
