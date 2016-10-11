@@ -47,11 +47,12 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.1.6',
+      version='0.1.7',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
       description='Parse SQL queries using the PostgreSQL query parser',
+      install_requires=['six'],
       license='BSD',
       cmdclass={'build_ext': PSqlParseBuildExt},
       ext_modules=extensions)
