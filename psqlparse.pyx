@@ -129,8 +129,8 @@ def parse(query):
     result = pg_query_parse(encoded_query)
 
     if result.error:
-        error = PSqlParseError(result.error.message, result.error.lineno,
-                               result.error.cursorpos)
+        error = PSqlParseError(result.error.message.decode('utf8'),
+                               result.error.lineno, result.error.cursorpos)
         pg_query_free_parse_result(result)
         raise error
 
