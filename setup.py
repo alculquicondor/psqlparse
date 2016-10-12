@@ -40,7 +40,7 @@ if USE_CYTHON:
 
 setup(name='psqlparse',
       version='0.2.3',
-      url='https://github.com/alculquicondor/queryparser',
+      url='https://github.com/alculquicondor/psqlparse',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
       description='Parse SQL queries using the PostgreSQL query parser',
