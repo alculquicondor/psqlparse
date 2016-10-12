@@ -2,7 +2,8 @@ import json
 
 import six
 
-from .nodes import Statement, PSqlParseError
+from .exceptions import PSqlParseError
+from .nodes import Statement
 from .pg_query cimport (pg_query_parse, pg_query_free_parse_result,
                        PgQueryParseResult)
 
