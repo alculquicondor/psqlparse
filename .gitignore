@@ -1,8 +1,7 @@
-libpg_query/
-*.o
+libpg_query-9.5-latest.zip
+libpg_query-9.5-latest/
 *.so
-*.a
-psqlparse.c
+psqlparse/parser.c
 build/
 dist/
 .idea/

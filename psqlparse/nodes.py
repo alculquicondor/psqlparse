@@ -1,9 +1,4 @@
-import json
-
 import six
-
-from pg_query cimport (pg_query_parse, pg_query_free_parse_result,
-                      PgQueryParseResult)
 
 
 @six.python_2_unicode_compatible
@@ -63,7 +58,7 @@ class WithClause(object):
         self.queries = {
             cte['ctename']: Statement(cte['ctequery'])
             for cte in ctes
-        }
+            }
 
     def __repr__(self):
         return '<WithClause (%d)>' % len(self.queries)
@@ -72,10 +67,9 @@ class WithClause(object):
         s = 'WITH '
         if self.recursive:
             s += 'RECURSIVE '
-        s += ', '.join([
-            '%s AS (%s)' % (name, query)
-            for name, query in six.iteritems(self.queries)
-        ])
+        s += ', '.join(
+            ['%s AS (%s)' % (name, query)
+             for name, query in six.iteritems(self.queries)])
         return s
 
 
@@ -84,13 +78,13 @@ class Statement(object):
     def __init__(self, obj):
         self.type = six.next(six.iterkeys(obj))
         self._obj = six.next(six.itervalues(obj))
-        self.from_clause = FromClause(self._obj.get('fromClause'))\
+        self.from_clause = FromClause(self._obj.get('fromClause')) \
             if self._obj.get('fromClause') else None
-        self.target_list = TargetList(self._obj.get('targetList'))\
+        self.target_list = TargetList(self._obj.get('targetList')) \
             if self._obj.get('targetList') else None
-        self.where_clause = WhereClause(self._obj.get('whereClause'))\
+        self.where_clause = WhereClause(self._obj.get('whereClause')) \
             if self._obj.get('whereClause') else None
-        self.with_clause = WithClause(self._obj.get('withClause'))\
+        self.with_clause = WithClause(self._obj.get('withClause')) \
             if self._obj.get('withClause') else None
 
     def __repr__(self):
@@ -113,28 +107,3 @@ class Statement(object):
         if self.where_clause:
             s += ' ' + str(self.where_clause)
         return s
-
-
-def parse(query):
-    cdef bytes encoded_query
-    cdef PgQueryParseResult result
-
-    if isinstance(query, six.text_type):
-        encoded_query = query.encode('utf8')
-    elif isinstance(query, six.binary_type):
-        encoded_query = query
-    else:
-        encoded_query = six.text_type(query).encode('utf8')
-
-    result = pg_query_parse(encoded_query)
-
-    if result.error:
-        error = PSqlParseError(result.error.message.decode('utf8'),
-                               result.error.lineno, result.error.cursorpos)
-        pg_query_free_parse_result(result)
-        raise error
-
-    statements = [Statement(x) for x in
-                  json.loads(result.parse_tree.decode('utf8'), strict=False)]
-    pg_query_free_parse_result(result)
-    return statements

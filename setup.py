@@ -22,13 +22,13 @@ USE_CYTHON = bool(os.environ.get('USE_CYTHON'))
 
 ext = '.pyx' if USE_CYTHON else '.c'
 
-libpg_query = os.path.join('.', 'libpg_query')
+libpg_query = os.path.join('.', 'libpg_query-9.5-latest')
 
 libraries = ['pg_query']
 
 extensions = [
-    Extension('psqlparse',
-              ['psqlparse' + ext],
+    Extension('psqlparse.parser',
+              ['psqlparse/parser' + ext],
               libraries=libraries,
               include_dirs=[libpg_query],
               library_dirs=[libpg_query])
@@ -39,7 +39,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='0.2.2',
+      version='0.2.3',
       url='https://github.com/alculquicondor/queryparser',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
@@ -47,4 +47,5 @@ setup(name='psqlparse',
       install_requires=['six'],
       license='BSD',
       cmdclass={'build_ext': PSqlParseBuildExt},
+      packages=['psqlparse'],
       ext_modules=extensions)
