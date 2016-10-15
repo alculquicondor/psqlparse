@@ -48,10 +48,10 @@ class TestParse(unittest.TestCase):
         stmt_types = [stmt.type for stmt in insert_and_stmt]
         self.assertListEqual(['InsertStmt', 'SelectStmt'], stmt_types)
 
+    @unittest.expectedFailure
     def test_syntax_error_select_statement(self):
         query = "SELECT * FRO my_table"
         try:
             parse(query)
-        except Exception as e:
-            exception = e
-        self.assertIsInstance(exception, PSqlParseError)
+        except PSqlParseError as e:
+            self.fail()
