@@ -31,9 +31,14 @@ class TestParse(unittest.TestCase):
         query = "SELECT * FROM table_one JOIN table_two USING (common)"
         stmt = parse(query).pop()
 
-    @unittest.skip
     def test_select_with(self):
-        self.fail()
+        query = ("WITH fake_table AS (SELECT SUM(countable) AS total "
+                 "FROM inner_table GROUP BY groupable) "
+                 "SELECT * FROM fake_table")
+        stmt = parse(query).pop()
+        self.assertEqual('SelectStmt',
+                         stmt.with_clause.queries['fake_table'].type)
+        self.assertIsNone(stmt.with_clause.recursive)
 
     def test_insert(self):
         query = "INSERT INTO my_table(id) VALUES(1)"
@@ -48,10 +53,11 @@ class TestParse(unittest.TestCase):
         stmt_types = [stmt.type for stmt in insert_and_stmt]
         self.assertListEqual(['InsertStmt', 'SelectStmt'], stmt_types)
 
-    @unittest.expectedFailure
     def test_syntax_error_select_statement(self):
         query = "SELECT * FRO my_table"
         try:
             parse(query)
+            self.fail('Syntax error not generating an PSqlParseError')
         except PSqlParseError as e:
-            self.fail()
+            self.assertEqual(e.cursorpos, 10)
+            self.assertEqual(e.message, 'syntax error at or near "FRO"')
