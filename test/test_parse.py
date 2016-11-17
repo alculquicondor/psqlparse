@@ -24,12 +24,13 @@ class TestParse(unittest.TestCase):
         target = stmt.target_list.targets.pop()
         self.assertDictEqual({'str': 'col1'},
                              target['val']['ColumnRef']['fields'][0]['String'])
-        self.assertDictEqual({'str': '~~'},
-                             stmt.where_clause.obj['A_Expr']['name'][0]['String'])
+        self.assertDictEqual({'str': '~~'}, stmt.where_clause
+                             .obj['A_Expr']['name'][0]['String'])
 
     def test_select_join(self):
         query = "SELECT * FROM table_one JOIN table_two USING (common)"
         stmt = parse(query).pop()
+        self.assertEqual(stmt.type, 'SelectStmt')
 
     def test_select_with(self):
         query = ("WITH fake_table AS (SELECT SUM(countable) AS total "
