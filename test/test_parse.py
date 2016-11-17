@@ -41,6 +41,13 @@ class TestParse(unittest.TestCase):
                          stmt.with_clause.queries['fake_table'].type)
         self.assertIsNone(stmt.with_clause.recursive)
 
+    def test_select_subquery(self):
+        query = "select * FROM (select something from dataset) as other"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.type, 'SelectStmt')
+        self.assertEqual(len(stmt.from_clause.items), 1)
+        self.assertEqual(len(stmt.target_list.targets), 1)
+
     def test_insert(self):
         query = "INSERT INTO my_table(id) VALUES(1)"
         stmt = parse(query).pop()
