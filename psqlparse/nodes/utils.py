@@ -10,6 +10,8 @@ def get_node_class(class_name):
 
 
 def build_from_obj(obj):
+    if isinstance(obj, list):
+        return [build_from_obj(item) for item in obj]
     if not isinstance(obj, dict):
         return obj
     _class = get_node_class(next(iterkeys(obj)))
@@ -18,7 +20,3 @@ def build_from_obj(obj):
 
 def build_from_item(obj, key):
     return build_from_obj(obj[key]) if key in obj else None
-
-
-def build_list_from_item(obj, key):
-    return [build_from_obj(item) for item in obj[key]] if key in obj else None

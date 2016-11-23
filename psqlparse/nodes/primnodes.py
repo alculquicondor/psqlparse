@@ -1,6 +1,6 @@
 import abc
 
-from .utils import build_from_item, build_list_from_item
+from .utils import build_from_item
 
 
 class Value(object):
@@ -87,7 +87,7 @@ class JoinExpr(object):
         self.is_natural = obj.get('isNatural')
         self.larg = build_from_item(obj, 'larg')
         self.rarg = build_from_item(obj, 'rarg')
-        self.using_clause = build_list_from_item(obj, 'usingClause')
+        self.using_clause = build_from_item(obj, 'usingClause')
         self.quals = build_from_item(obj, 'quals')
         self.alias = build_from_item(obj, 'alias')
 
@@ -102,7 +102,7 @@ class Alias(object):
 
     def __init__(self, obj):
         self.aliasname = obj.get('aliasname')
-        self.colnames = build_list_from_item(obj, 'colnames')
+        self.colnames = build_from_item(obj, 'colnames')
 
 
 class IntoClause(object):
@@ -116,5 +116,5 @@ class BoolExpr(object):
     def __init__(self, obj):
         self.xpr = obj.get('xpr')
         self.boolop = obj.get('boolop')
-        self.args = build_list_from_item(obj, 'args')
+        self.args = build_from_item(obj, 'args')
         self.location = obj.get('location')

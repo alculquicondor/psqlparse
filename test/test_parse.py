@@ -88,7 +88,7 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(with_query.ctequery, nodes.SelectStmt)
 
     def test_select_subquery(self):
-        query = "select * FROM (select something from dataset) as other"
+        query = "SELECT * FROM (SELECT something FROM dataset) AS other"
         stmt = parse(query).pop()
 
         self.assertIsInstance(stmt, nodes.SelectStmt)
@@ -101,13 +101,34 @@ class SelectQueriesTest(unittest.TestCase):
 
         self.assertEqual(len(stmt.target_list), 1)
 
+    def test_select_from_values(self):
+        query = ("SELECT * FROM "
+                 "(VALUES (1, 'one'), (2, 'two')) AS t (num, letter)")
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        self.assertEqual(len(stmt.from_clause), 1)
+        self.assertIsInstance(stmt.from_clause[0], nodes.RangeSubselect)
+
+        alias = stmt.from_clause[0].alias
+        self.assertIsInstance(alias, nodes.Alias)
+        self.assertEqual(alias.aliasname, 't')
+        self.assertEqual(['num', 'letter'], [str(v) for v in alias.colnames])
+
+        subquery = stmt.from_clause[0].subquery
+        self.assertIsInstance(subquery, nodes.SelectStmt)
+        self.assertEqual(len(subquery.values_lists), 2)
+        self.assertEqual([1, 'one'], [v.val.val
+                                      for v in subquery.values_lists[0]])
+
 
 class InsertQueriesTest(unittest.TestCase):
 
     def test_insert(self):
         query = "INSERT INTO my_table(id) VALUES(1)"
         stmt = parse(query).pop()
-        self.assertEqual('InsertStmt', stmt.type)
+
+        self.assertIsInstance(stmt, nodes.InsertStmt)
         self.assertIsNone(stmt.from_clause)
         self.assertIsNone(stmt.where_clause)
 
@@ -117,8 +138,8 @@ class MultipleQueriesTest(unittest.TestCase):
     def test_has_insert_and_select_statement(self):
         query = "INSERT INTO my_table(id) VALUES(1); SELECT * FROM my_table"
         insert_and_stmt = parse(query)
-        stmt_types = [stmt.type for stmt in insert_and_stmt]
-        self.assertListEqual(['InsertStmt', 'SelectStmt'], stmt_types)
+        stmt_types = [type(stmt) for stmt in insert_and_stmt]
+        self.assertListEqual([nodes.InsertStmt, nodes.SelectStmt], stmt_types)
 
 
 class WrongQueriesTest(unittest.TestCase):
