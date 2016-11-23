@@ -2,7 +2,7 @@ import unittest
 
 from psqlparse import parse
 from psqlparse.exceptions import PSqlParseError
-from psqlparse.nodes import WhereClause
+from psqlparse import nodes
 
 
 class TestParse(unittest.TestCase):
@@ -10,35 +10,51 @@ class TestParse(unittest.TestCase):
     def test_select_all_no_where(self):
         query = "SELECT * FROM my_table"
         stmt = parse(query).pop()
-        self.assertEqual(stmt.type, "SelectStmt")
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
         self.assertIsNone(stmt.where_clause)
-        target = stmt.target_list.targets.pop()
-        self.assertDictEqual({'A_Star': {}},
-                             target['val']['ColumnRef']['fields'][0])
+
+        self.assertEqual(len(stmt.target_list), 1)
+        target = stmt.target_list[0]
+        self.assertIsInstance(target, nodes.ResTarget)
+        self.assertIsInstance(target.val.fields[0], nodes.AStar)
+
+        self.assertEqual(len(stmt.from_clause), 1)
+        from_clause = stmt.from_clause[0]
+        self.assertIsInstance(from_clause, nodes.RangeVar)
+        self.assertEqual(from_clause.relname, 'my_table')
 
     def test_select_one_column_where(self):
-        query = "SELECT col1 FROM my_table WHERE my_attribute LIKE condition"
+        query = ("SELECT col1 FROM my_table "
+                 "WHERE my_attribute LIKE 'condition'")
         stmt = parse(query).pop()
-        self.assertEqual(stmt.type, "SelectStmt")
-        self.assertIsInstance(stmt.where_clause, WhereClause)
-        target = stmt.target_list.targets.pop()
-        self.assertDictEqual({'str': 'col1'},
-                             target['val']['ColumnRef']['fields'][0]['String'])
-        self.assertDictEqual({'str': '~~'}, stmt.where_clause
-                             .obj['A_Expr']['name'][0]['String'])
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        self.assertEqual(len(stmt.target_list), 1)
+        target = stmt.target_list[0]
+        self.assertIsInstance(target, nodes.ResTarget)
+        self.assertEqual(target.val.fields[0].str, 'col1')
+
+        self.assertIsInstance(stmt.where_clause, nodes.AExpr)
+        expr = stmt.where_clause
+        self.assertEqual(expr.lexpr.fields[0].str, 'my_attribute')
+        self.assertEqual(expr.rexpr.val.str, 'condition')
 
     def test_select_join(self):
         query = "SELECT * FROM table_one JOIN table_two USING (common)"
         stmt = parse(query).pop()
-        self.assertEqual(stmt.type, 'SelectStmt')
+        self.assertIsInstance(stmt, nodes.SelectStmt)
 
     def test_select_with(self):
         query = ("WITH fake_table AS (SELECT SUM(countable) AS total "
                  "FROM inner_table GROUP BY groupable) "
                  "SELECT * FROM fake_table")
         stmt = parse(query).pop()
-        self.assertEqual('SelectStmt',
-                         stmt.with_clause.queries['fake_table'].type)
+        self.assertIsInstance(stmt.with_clause, nodes.WithClause)
+        self.assertEqual(len(stmt.with_clause.ctes), 1)
+        with_query = stmt.with_clause.ctes[0]
+        # self.assertEqual('SelectStmt',
+        #                  stmt.with_clause.queries['fake_table'].type)
         self.assertIsNone(stmt.with_clause.recursive)
 
     def test_select_subquery(self):

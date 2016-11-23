@@ -1,0 +1,22 @@
+import importlib
+
+from six import next, iterkeys, itervalues
+
+
+def get_node_class(class_name):
+    class_name = class_name.replace('_', '')
+    module = importlib.import_module('psqlparse.nodes')
+    return getattr(module, class_name, None)
+
+
+def build_from_obj(obj):
+    _class = get_node_class(next(iterkeys(obj)))
+    return _class(next(itervalues(obj))) if _class else obj
+
+
+def build_from_item(obj, key):
+    return build_from_obj(obj[key]) if key in obj else None
+
+
+def build_list_from_item(obj, key):
+    return [build_from_obj(item) for item in obj[key]] if key in obj else None

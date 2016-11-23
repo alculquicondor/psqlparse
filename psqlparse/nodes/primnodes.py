@@ -1,3 +1,13 @@
+class Value(object):
+    pass
+
+
+class String(Value):
+
+    def __init__(self, obj):
+        self.str = obj.get('str')
+
+
 class RangeVar(object):
 
     def __init__(self, obj):
@@ -45,7 +55,7 @@ class JoinExpr(object):
         return '[] JOIN [] ON ()'
 
 
-NODE_MAP = {
-    'RangeVar': RangeVar,
-    'JoinExpr': JoinExpr
-}
+class IntoClause(object):
+
+    def __init__(self, obj):
+        self._obj = obj
