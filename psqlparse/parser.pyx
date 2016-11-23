@@ -2,7 +2,7 @@ import json
 
 import six
 
-from .nodes import build_from_obj
+from .nodes.utils import build_from_obj
 from .exceptions import PSqlParseError
 from .pg_query cimport (pg_query_parse, pg_query_free_parse_result,
                        PgQueryParseResult)

@@ -3,9 +3,11 @@ import importlib
 from six import next, iterkeys, itervalues
 
 
+module = importlib.import_module('psqlparse.nodes')
+
+
 def get_node_class(class_name):
     class_name = class_name.replace('_', '')
-    module = importlib.import_module('psqlparse.nodes')
     return getattr(module, class_name, None)
 
 
