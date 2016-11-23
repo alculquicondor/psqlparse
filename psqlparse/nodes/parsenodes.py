@@ -7,9 +7,6 @@ class Statement(object):
 
     statement = ''
 
-    def __init__(self, obj):
-        self._obj = obj
-
     def __str__(self):
         return self.statement
 
@@ -19,8 +16,6 @@ class SelectStmt(Statement):
     statement = 'SELECT'
 
     def __init__(self, obj):
-        super(SelectStmt, self).__init__(obj)
-
         self.distinct_clause = build_list_from_item(obj, 'distinctClause')
         self.into_clause = build_from_item(obj, 'intoClause')
         self.target_list = build_list_from_item(obj, 'targetList')
@@ -48,7 +43,7 @@ class InsertStmt(Statement):
     statement = 'INSERT INTO'
 
     def __init__(self, obj):
-        super(InsertStmt, self).__init__(obj)
+        pass
 
 
 class UpdateStmt(Statement):
@@ -56,7 +51,7 @@ class UpdateStmt(Statement):
     statement = 'UPDATE'
 
     def __init__(self, obj):
-        super(UpdateStmt, self).__init__(obj)
+        pass
 
 
 class DeleteStmt(Statement):
@@ -64,7 +59,7 @@ class DeleteStmt(Statement):
     statement = 'DELETE FROM'
 
     def __init__(self, obj):
-        super(DeleteStmt, self).__init__(obj)
+        pass
 
 
 class WithClause(object):
@@ -85,6 +80,29 @@ class WithClause(object):
             ['%s AS (%s)' % (name, query)
              for name, query in six.iteritems(self.ctes)])
         return s
+
+
+class CommonTableExpr(object):
+
+    def __init__(self, obj):
+        self.ctename = obj.get('ctename')
+        self.aliascolnames = build_list_from_item(obj, 'aliascolnames')
+        self.ctequery = build_from_item(obj, 'ctequery')
+        self.location = obj.get('location')
+        self.cterecursive = obj.get('cterecursive')
+        self.cterefcount = obj.get('cterefcount')
+        self.ctecolnames = build_list_from_item(obj, 'ctecolnames')
+        self.ctecoltypes = build_list_from_item(obj, 'ctecoltypes')
+        self.ctecoltypmods = build_list_from_item(obj, 'ctecoltypmods')
+        self.ctecolcollations = build_list_from_item(obj, 'ctecolcollations')
+
+
+class RangeSubselect(object):
+
+    def __init__(self, obj):
+        self.lateral = obj.get('lateral')
+        self.subquery = build_from_item(obj, 'subquery')
+        self.alias = build_from_item(obj, 'alias')
 
 
 class ResTarget(object):
