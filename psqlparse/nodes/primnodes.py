@@ -1,7 +1,8 @@
 from .utils import build_from_item
+from .nodes import Node
 
 
-class RangeVar(object):
+class RangeVar(Node):
 
     def __init__(self, obj):
         """
@@ -27,7 +28,7 @@ class RangeVar(object):
         return '%s' % self.relname
 
 
-class JoinExpr(object):
+class JoinExpr(Node):
     """
     For SQL JOIN expressions
     """
@@ -48,20 +49,20 @@ class JoinExpr(object):
         return '%s JOIN %s ON ()' % (self.larg, self.rarg)
 
 
-class Alias(object):
+class Alias(Node):
 
     def __init__(self, obj):
         self.aliasname = obj.get('aliasname')
         self.colnames = build_from_item(obj, 'colnames')
 
 
-class IntoClause(object):
+class IntoClause(Node):
 
     def __init__(self, obj):
         self._obj = obj
 
 
-class BoolExpr(object):
+class BoolExpr(Node):
 
     def __init__(self, obj):
         self.xpr = obj.get('xpr')

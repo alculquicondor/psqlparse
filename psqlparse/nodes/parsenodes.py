@@ -1,9 +1,10 @@
 import six
 
 from .utils import build_from_item
+from .nodes import Node
 
 
-class Statement(object):
+class Statement(Node):
 
     statement = ''
 
@@ -76,7 +77,7 @@ class DeleteStmt(Statement):
         self.with_clause = build_from_item(obj, 'withClause')
 
 
-class WithClause(object):
+class WithClause(Node):
 
     def __init__(self, obj):
         self.ctes = build_from_item(obj, 'ctes')
@@ -96,7 +97,7 @@ class WithClause(object):
         return s
 
 
-class CommonTableExpr(object):
+class CommonTableExpr(Node):
 
     def __init__(self, obj):
         self.ctename = obj.get('ctename')
@@ -111,7 +112,7 @@ class CommonTableExpr(object):
         self.ctecolcollations = build_from_item(obj, 'ctecolcollations')
 
 
-class RangeSubselect(object):
+class RangeSubselect(Node):
 
     def __init__(self, obj):
         self.lateral = obj.get('lateral')
@@ -119,7 +120,7 @@ class RangeSubselect(object):
         self.alias = build_from_item(obj, 'alias')
 
 
-class ResTarget(object):
+class ResTarget(Node):
     """
     Result target.
 
@@ -143,20 +144,20 @@ class ResTarget(object):
         self.location = obj.get('location')
 
 
-class ColumnRef(object):
+class ColumnRef(Node):
 
     def __init__(self, obj):
         self.fields = build_from_item(obj, 'fields')
         self.location = obj.get('location')
 
 
-class AStar(object):
+class AStar(Node):
 
     def __init__(self, obj):
         pass
 
 
-class AExpr(object):
+class AExpr(Node):
 
     def __init__(self, obj):
         self.kind = obj.get('kind')
@@ -166,7 +167,7 @@ class AExpr(object):
         self.location = obj.get('location')
 
 
-class AConst(object):
+class AConst(Node):
 
     def __init__(self, obj):
         self.val = build_from_item(obj, 'val')
