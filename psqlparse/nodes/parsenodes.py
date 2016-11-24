@@ -43,7 +43,12 @@ class InsertStmt(Statement):
     statement = 'INSERT INTO'
 
     def __init__(self, obj):
-        pass
+        self.relation = build_from_item(obj, 'relation')
+        self.cols = build_from_item(obj, 'cols')
+        self.select_stmt = build_from_item(obj, 'selectStmt')
+        self.on_conflict_clause = build_from_item(obj, 'onConflictClause')
+        self.returning_list = build_from_item(obj, 'returningList')
+        self.with_clause = build_from_item(obj, 'withClause')
 
 
 class UpdateStmt(Statement):
@@ -51,7 +56,12 @@ class UpdateStmt(Statement):
     statement = 'UPDATE'
 
     def __init__(self, obj):
-        pass
+        self.relation = build_from_item(obj, 'relation')
+        self.target_list = build_from_item(obj, 'targetList')
+        self.where_clause = build_from_item(obj, 'whereClause')
+        self.from_clause = build_from_item(obj, 'fromClause')
+        self.returning_list = build_from_item(obj, 'returningList')
+        self.with_clause = build_from_item(obj, 'withClause')
 
 
 class DeleteStmt(Statement):
@@ -59,7 +69,11 @@ class DeleteStmt(Statement):
     statement = 'DELETE FROM'
 
     def __init__(self, obj):
-        pass
+        self.relation = build_from_item(obj, 'relation')
+        self.using_clause = build_from_item(obj, 'usingClause')
+        self.where_clause = build_from_item(obj, 'whereClause')
+        self.returning_list = build_from_item(obj, 'returningList')
+        self.with_clause = build_from_item(obj, 'withClause')
 
 
 class WithClause(object):
@@ -106,6 +120,21 @@ class RangeSubselect(object):
 
 
 class ResTarget(object):
+    """
+    Result target.
+
+    In a SELECT target list, 'name' is the column label from an
+    'AS ColumnLabel' clause, or NULL if there was none, and 'val' is the
+    value expression itself.  The 'indirection' field is not used.
+
+    INSERT uses ResTarget in its target-column-names list.  Here, 'name' is
+    the name of the destination column, 'indirection' stores any subscripts
+    attached to the destination, and 'val' is not used.
+
+    In an UPDATE target list, 'name' is the name of the destination column,
+    'indirection' stores any subscripts attached to the destination, and
+    'val' is the expression to assign.
+    """
 
     def __init__(self, obj):
         self.name = obj.get('name')

@@ -124,22 +124,63 @@ class SelectQueriesTest(unittest.TestCase):
 
 class InsertQueriesTest(unittest.TestCase):
 
-    def test_insert(self):
-        query = "INSERT INTO my_table(id) VALUES(1)"
+    def test_insert_no_where(self):
+        query = "INSERT INTO my_table(id, name) VALUES(1, 'some')"
         stmt = parse(query).pop()
 
         self.assertIsInstance(stmt, nodes.InsertStmt)
-        self.assertIsNone(stmt.from_clause)
-        self.assertIsNone(stmt.where_clause)
+        self.assertIsNone(stmt.returning_list)
+
+        self.assertEqual(stmt.relation.relname, 'my_table')
+
+        self.assertEqual(len(stmt.cols), 2)
+        self.assertEqual(stmt.cols[0].name, 'id')
+        self.assertEqual(stmt.cols[1].name, 'name')
+
+        self.assertIsInstance(stmt.select_stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.select_stmt.values_lists), 1)
+
+    def test_insert_select(self):
+        query = "INSERT INTO my_table(id, name) SELECT 1, 'some'"
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.InsertStmt)
+
+        self.assertIsInstance(stmt.select_stmt, nodes.SelectStmt)
+        targets = stmt.select_stmt.target_list
+        self.assertEqual(len(targets), 2)
+        self.assertIsInstance(targets[0], nodes.ResTarget)
+        self.assertEqual(int(targets[0].val.val), 1)
+        self.assertIsInstance(targets[1], nodes.ResTarget)
+        self.assertEqual(str(targets[1].val.val), 'some')
+
+    def test_insert_returning(self):
+        query = "INSERT INTO my_table(id) VALUES (5) RETURNING id, \"date\""
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.InsertStmt)
+        self.assertEqual(len(stmt.returning_list), 2)
+        self.assertIsInstance(stmt.returning_list[0], nodes.ResTarget)
+        self.assertEqual(str(stmt.returning_list[0].val.fields[0]), 'id')
+        self.assertIsInstance(stmt.returning_list[1], nodes.ResTarget)
+        self.assertEqual(str(stmt.returning_list[1].val.fields[0]), 'date')
 
 
 class MultipleQueriesTest(unittest.TestCase):
 
     def test_has_insert_and_select_statement(self):
-        query = "INSERT INTO my_table(id) VALUES(1); SELECT * FROM my_table"
-        insert_and_stmt = parse(query)
-        stmt_types = [type(stmt) for stmt in insert_and_stmt]
+        query = ("INSERT INTO my_table(id) VALUES(1); "
+                 "SELECT * FROM my_table")
+        stmts = parse(query)
+        stmt_types = [type(stmt) for stmt in stmts]
         self.assertListEqual([nodes.InsertStmt, nodes.SelectStmt], stmt_types)
+
+    def test_has_update_and_delete_statement(self):
+        query = ("UPDATE my_table SET id = 5; "
+                 "DELETE FROM my_table")
+        stmts = parse(query)
+        stmt_types = [type(stmt) for stmt in stmts]
+        self.assertListEqual([nodes.UpdateStmt, nodes.DeleteStmt], stmt_types)
 
 
 class WrongQueriesTest(unittest.TestCase):
@@ -153,3 +194,11 @@ class WrongQueriesTest(unittest.TestCase):
             self.assertEqual(e.cursorpos, 10)
             self.assertEqual(e.message, 'syntax error at or near "FRO"')
 
+    def test_incomplete_insert_statement(self):
+        query = "INSERT INTO my_table"
+        try:
+            parse(query)
+            self.fail('Syntax error not generating an PSqlParseError')
+        except PSqlParseError as e:
+            self.assertEqual(e.cursorpos, 21)
+            self.assertEqual(e.message, 'syntax error at end of input')
