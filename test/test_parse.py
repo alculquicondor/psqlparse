@@ -225,6 +225,11 @@ class TablesTest(unittest.TestCase):
         self.assertEqual(stmt.tables(),
                          {'table_one', 'table_two', 'dataset'})
 
+    def test_update_from(self):
+        query = "UPDATE dataset SET a = 5 FROM extra WHERE b = c"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'dataset', 'extra'})
+
     def test_join(self):
         query = ("SELECT * FROM table_one JOIN table_two USING (common_1)"
                  " JOIN table_three USING (common_2)")
