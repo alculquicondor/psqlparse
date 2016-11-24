@@ -202,3 +202,43 @@ class WrongQueriesTest(unittest.TestCase):
         except PSqlParseError as e:
             self.assertEqual(e.cursorpos, 21)
             self.assertEqual(e.message, 'syntax error at end of input')
+
+
+class TablesTest(unittest.TestCase):
+
+    def test_simple_select(self):
+        query = "SELECT * FROM table_one, table_two"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
+
+    def test_select_with(self):
+        query = ("WITH fake_table AS (SELECT * FROM inner_table) "
+                 "SELECT * FROM fake_table")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'inner_table', 'fake_table'})
+
+    def test_update_subquery(self):
+        query = ("UPDATE dataset SET a = 5 WHERE "
+                 "id IN (SELECT * from table_one) OR"
+                 " age IN (select * from table_two)")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(),
+                         {'table_one', 'table_two', 'dataset'})
+
+    def test_join(self):
+        query = ("SELECT * FROM table_one JOIN table_two USING (common_1)"
+                 " JOIN table_three USING (common_2)")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(),
+                         {'table_one', 'table_two', 'table_three'})
+
+    def test_insert_select(self):
+        query = "INSERT INTO table_one(id, name) SELECT * from table_two"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
+
+    def test_insert_with(self):
+        query = ("WITH fake as (SELECT * FROM inner_table) "
+                 "INSERT INTO dataset SELECT * FROM fake")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'inner_table', 'fake', 'dataset'})

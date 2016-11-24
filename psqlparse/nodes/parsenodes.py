@@ -38,6 +38,19 @@ class SelectStmt(Statement):
         self.larg = build_from_item(obj, 'larg')
         self.rarg = build_from_item(obj, 'rarg')
 
+    def tables(self):
+        _tables = set()
+
+        if self.from_clause:
+            for item in self.from_clause:
+                _tables |= item.tables()
+        if self.where_clause:
+            _tables |= self.where_clause.tables()
+        if self.with_clause:
+            _tables |= self.with_clause.tables()
+
+        return _tables
+
 
 class InsertStmt(Statement):
 
@@ -50,6 +63,14 @@ class InsertStmt(Statement):
         self.on_conflict_clause = build_from_item(obj, 'onConflictClause')
         self.returning_list = build_from_item(obj, 'returningList')
         self.with_clause = build_from_item(obj, 'withClause')
+
+    def tables(self):
+        _tables = self.relation.tables() | self.select_stmt.tables()
+
+        if self.with_clause:
+            _tables |= self.with_clause.tables()
+
+        return _tables
 
 
 class UpdateStmt(Statement):
@@ -96,6 +117,12 @@ class WithClause(Node):
              for name, query in six.iteritems(self.ctes)])
         return s
 
+    def tables(self):
+        _tables = set()
+        for item in self.ctes:
+            _tables |= item.tables()
+        return _tables
+
 
 class CommonTableExpr(Node):
 
@@ -110,6 +137,9 @@ class CommonTableExpr(Node):
         self.ctecoltypes = build_from_item(obj, 'ctecoltypes')
         self.ctecoltypmods = build_from_item(obj, 'ctecoltypmods')
         self.ctecolcollations = build_from_item(obj, 'ctecolcollations')
+
+    def tables(self):
+        return self.ctequery.tables()
 
 
 class RangeSubselect(Node):

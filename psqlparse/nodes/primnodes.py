@@ -21,6 +21,9 @@ class RangeVar(Node):
         self.alias = obj.get('alias')
         self.location = obj['location']
 
+    def tables(self):
+        return {self.relname}
+
     def __repr__(self):
         return '<RangeVar (%s)>' % self.relname
 
@@ -62,10 +65,26 @@ class IntoClause(Node):
         self._obj = obj
 
 
-class BoolExpr(Node):
+class Expr(Node):
+    """
+    Expr - generic superclass for executable-expression nodes
+    """
+
+
+class BoolExpr(Expr):
 
     def __init__(self, obj):
-        self.xpr = obj.get('xpr')
         self.boolop = obj.get('boolop')
         self.args = build_from_item(obj, 'args')
+        self.location = obj.get('location')
+
+
+class SubLink(Expr):
+
+    def __init__(self, obj):
+        self.sub_link_type = obj.get('subLinkType')
+        self.sub_link_id = obj.get('subLinkId')
+        self.testexpr = build_from_item(obj, 'testexpr')
+        self.oper_name = build_from_item(obj, 'operName')
+        self.subselect = build_from_item(obj, 'subselect')
         self.location = obj.get('location')
