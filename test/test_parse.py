@@ -242,3 +242,10 @@ class TablesTest(unittest.TestCase):
                  "INSERT INTO dataset SELECT * FROM fake")
         stmt = parse(query).pop()
         self.assertEqual(stmt.tables(), {'inner_table', 'fake', 'dataset'})
+
+    def test_delete(self):
+        query = ("DELETE FROM dataset USING table_one "
+                 "WHERE x = y OR x IN (SELECT * from table_two)")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'dataset', 'table_one',
+                                         'table_two'})

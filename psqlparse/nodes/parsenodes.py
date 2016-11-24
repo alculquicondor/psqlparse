@@ -85,6 +85,19 @@ class UpdateStmt(Statement):
         self.returning_list = build_from_item(obj, 'returningList')
         self.with_clause = build_from_item(obj, 'withClause')
 
+    def tables(self):
+        _tables = self.relation.tables()
+
+        if self.where_clause:
+            _tables |= self.where_clause.tables()
+        if self.from_clause:
+            for item in self.from_clause:
+                _tables |= item.tables()
+        if self.with_clause:
+            _tables |= self.with_clause.tables()
+
+        return _tables
+
 
 class DeleteStmt(Statement):
 
@@ -96,6 +109,19 @@ class DeleteStmt(Statement):
         self.where_clause = build_from_item(obj, 'whereClause')
         self.returning_list = build_from_item(obj, 'returningList')
         self.with_clause = build_from_item(obj, 'withClause')
+
+    def tables(self):
+        _tables = self.relation.tables()
+
+        if self.using_clause:
+            for item in self.using_clause:
+                _tables |= item.tables()
+        if self.where_clause:
+            _tables |= self.where_clause.tables()
+        if self.with_clause:
+            _tables |= self.with_clause.tables()
+
+        return _tables
 
 
 class WithClause(Node):
@@ -149,6 +175,9 @@ class RangeSubselect(Node):
         self.subquery = build_from_item(obj, 'subquery')
         self.alias = build_from_item(obj, 'alias')
 
+    def tables(self):
+        return self.subquery.tables()
+
 
 class ResTarget(Node):
     """
@@ -173,6 +202,9 @@ class ResTarget(Node):
         self.val = build_from_item(obj, 'val')
         self.location = obj.get('location')
 
+    def tables(self):
+        return set()
+
 
 class ColumnRef(Node):
 
@@ -180,11 +212,17 @@ class ColumnRef(Node):
         self.fields = build_from_item(obj, 'fields')
         self.location = obj.get('location')
 
+    def tables(self):
+        return set()
+
 
 class AStar(Node):
 
     def __init__(self, obj):
         pass
+
+    def tables(self):
+        return set()
 
 
 class AExpr(Node):
@@ -196,9 +234,15 @@ class AExpr(Node):
         self.rexpr = build_from_item(obj, 'rexpr')
         self.location = obj.get('location')
 
+    def tables(self):
+        return self.lexpr.tables() | self.rexpr.tables()
+
 
 class AConst(Node):
 
     def __init__(self, obj):
         self.val = build_from_item(obj, 'val')
         self.location = obj.get('location')
+
+    def tables(self):
+        return set()
