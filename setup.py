@@ -39,7 +39,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='1.0-rc1',
+      version='1.0-rc2',
       url='https://github.com/alculquicondor/psqlparse',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
@@ -47,5 +47,5 @@ setup(name='psqlparse',
       install_requires=['six'],
       license='BSD',
       cmdclass={'build_ext': PSqlParseBuildExt},
-      packages=['psqlparse'],
+      packages=['psqlparse', 'psqlparse.nodes'],
       ext_modules=extensions)
