@@ -121,6 +121,14 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual([1, 'one'], [v.val.val
                                       for v in subquery.values_lists[0]])
 
+    def test_select_case(self):
+        query = ("SELECT a, CASE WHEN a=1 THEN 'one' WHEN a=2 THEN 'two'"
+                 " ELSE 'other' END FROM test")
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        self.assertEqual(len(stmt.target_list), 2)
+
 
 class InsertQueriesTest(unittest.TestCase):
 
@@ -202,6 +210,16 @@ class WrongQueriesTest(unittest.TestCase):
         except PSqlParseError as e:
             self.assertEqual(e.cursorpos, 21)
             self.assertEqual(e.message, 'syntax error at end of input')
+
+    def test_case_no_value(self):
+        query = ("SELECT a, CASE WHEN a=1 THEN 'one' WHEN a=2 THEN "
+                 " ELSE 'other' END FROM test")
+        try:
+            parse(query)
+            self.fail('Syntax error not generating an PSqlParseError')
+        except PSqlParseError as e:
+            self.assertEqual(e.cursorpos, 51)
+            self.assertEqual(e.message, 'syntax error at or near "ELSE"')
 
 
 class TablesTest(unittest.TestCase):
