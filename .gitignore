@@ -1,4 +1,5 @@
 .cache
+.coveragerc
 libpg_query-9.5-latest.zip
 libpg_query-9.5-latest/
 *.so
