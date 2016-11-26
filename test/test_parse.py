@@ -121,6 +121,14 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual([1, 'one'], [v.val.val
                                       for v in subquery.values_lists[0]])
 
+    def test_select_case(self):
+        query = ("SELECT a, CASE WHEN a=1 THEN 'one' WHEN a=2 THEN 'two'"
+                 " ELSE 'other' END FROM test")
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        self.assertEqual(len(stmt.target_list), 2)
+
 
 class InsertQueriesTest(unittest.TestCase):
 
@@ -202,3 +210,65 @@ class WrongQueriesTest(unittest.TestCase):
         except PSqlParseError as e:
             self.assertEqual(e.cursorpos, 21)
             self.assertEqual(e.message, 'syntax error at end of input')
+
+    def test_case_no_value(self):
+        query = ("SELECT a, CASE WHEN a=1 THEN 'one' WHEN a=2 THEN "
+                 " ELSE 'other' END FROM test")
+        try:
+            parse(query)
+            self.fail('Syntax error not generating an PSqlParseError')
+        except PSqlParseError as e:
+            self.assertEqual(e.cursorpos, 51)
+            self.assertEqual(e.message, 'syntax error at or near "ELSE"')
+
+
+class TablesTest(unittest.TestCase):
+
+    def test_simple_select(self):
+        query = "SELECT * FROM table_one, table_two"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
+
+    def test_select_with(self):
+        query = ("WITH fake_table AS (SELECT * FROM inner_table) "
+                 "SELECT * FROM fake_table")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'inner_table', 'fake_table'})
+
+    def test_update_subquery(self):
+        query = ("UPDATE dataset SET a = 5 WHERE "
+                 "id IN (SELECT * from table_one) OR"
+                 " age IN (select * from table_two)")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(),
+                         {'table_one', 'table_two', 'dataset'})
+
+    def test_update_from(self):
+        query = "UPDATE dataset SET a = 5 FROM extra WHERE b = c"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'dataset', 'extra'})
+
+    def test_join(self):
+        query = ("SELECT * FROM table_one JOIN table_two USING (common_1)"
+                 " JOIN table_three USING (common_2)")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(),
+                         {'table_one', 'table_two', 'table_three'})
+
+    def test_insert_select(self):
+        query = "INSERT INTO table_one(id, name) SELECT * from table_two"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
+
+    def test_insert_with(self):
+        query = ("WITH fake as (SELECT * FROM inner_table) "
+                 "INSERT INTO dataset SELECT * FROM fake")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'inner_table', 'fake', 'dataset'})
+
+    def test_delete(self):
+        query = ("DELETE FROM dataset USING table_one "
+                 "WHERE x = y OR x IN (SELECT * from table_two)")
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'dataset', 'table_one',
+                                         'table_two'})

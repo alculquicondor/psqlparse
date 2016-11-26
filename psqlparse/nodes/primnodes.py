@@ -27,6 +27,9 @@ class RangeVar(Node):
     def __str__(self):
         return '%s' % self.relname
 
+    def tables(self):
+        return {self.relname}
+
 
 class JoinExpr(Node):
     """
@@ -48,12 +51,18 @@ class JoinExpr(Node):
     def __str__(self):
         return '%s JOIN %s ON ()' % (self.larg, self.rarg)
 
+    def tables(self):
+        return self.larg.tables() | self.rarg.tables()
+
 
 class Alias(Node):
 
     def __init__(self, obj):
         self.aliasname = obj.get('aliasname')
         self.colnames = build_from_item(obj, 'colnames')
+
+    def tables(self):
+        return set()
 
 
 class IntoClause(Node):
@@ -62,10 +71,35 @@ class IntoClause(Node):
         self._obj = obj
 
 
-class BoolExpr(Node):
+class Expr(Node):
+    """
+    Expr - generic superclass for executable-expression nodes
+    """
+
+
+class BoolExpr(Expr):
 
     def __init__(self, obj):
-        self.xpr = obj.get('xpr')
         self.boolop = obj.get('boolop')
         self.args = build_from_item(obj, 'args')
         self.location = obj.get('location')
+
+    def tables(self):
+        _tables = set()
+        for item in self.args:
+            _tables |= item.tables()
+        return _tables
+
+
+class SubLink(Expr):
+
+    def __init__(self, obj):
+        self.sub_link_type = obj.get('subLinkType')
+        self.sub_link_id = obj.get('subLinkId')
+        self.testexpr = build_from_item(obj, 'testexpr')
+        self.oper_name = build_from_item(obj, 'operName')
+        self.subselect = build_from_item(obj, 'subselect')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return self.subselect.tables()
