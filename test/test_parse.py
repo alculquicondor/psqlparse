@@ -137,6 +137,17 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(stmt.larg, nodes.SelectStmt)
         self.assertIsInstance(stmt.rarg, nodes.SelectStmt)
 
+    def test_function_call(self):
+        query = "SELECT * FROM my_table WHERE ST_Intersects(geo1, geo2)"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        func_call = stmt.where_clause
+        self.assertIsInstance(func_call, nodes.FuncCall)
+        self.assertEqual(str(func_call.funcname[0]), 'st_intersects')
+        self.assertEqual(str(func_call.args[0].fields[0]), 'geo1')
+        self.assertEqual(str(func_call.args[1].fields[0]), 'geo2')
+
 
 class InsertQueriesTest(unittest.TestCase):
 

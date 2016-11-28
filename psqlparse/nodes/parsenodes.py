@@ -221,6 +221,24 @@ class ColumnRef(Node):
         return set()
 
 
+class FuncCall(Node):
+
+    def __init__(self, obj):
+        self.funcname = build_from_item(obj, 'funcname')
+        self.args = build_from_item(obj, 'args')
+        self.agg_order = build_from_item(obj, 'agg_order')
+        self.agg_filter = build_from_item(obj, 'agg_filter')
+        self.agg_within_group = obj.get('agg_within_group')
+        self.agg_star = obj.get('agg_star')
+        self.agg_distinct = obj.get('agg_distinct')
+        self.func_variadic = obj.get('func_variadic')
+        self.over = build_from_item(obj, 'over')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
+
+
 class AStar(Node):
 
     def __init__(self, obj):
