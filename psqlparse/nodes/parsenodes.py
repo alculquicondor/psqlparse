@@ -269,3 +269,16 @@ class AConst(Node):
 
     def tables(self):
         return set()
+
+
+class SortBy(Node):
+
+    def __init__(self, obj):
+        self.node = build_from_item(obj, 'node')
+        self.sortby_dir = obj.get('sortby_dir')
+        self.sortby_nulls = obj.get('sortby_nulls')
+        self.use_op = build_from_item(obj, 'useOp')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
