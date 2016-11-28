@@ -17,7 +17,31 @@ Usage
 
 ```python
 import psqlparse
-psqlparse.parse('SELECT * from mytable')
+statements = psqlparse.parse('SELECT * from mytable')
+used_tables = statements[0].tables()  # ['my_table']
+```
+
+Development
+-----------
+
+1. Install requirements:
+
+```shell
+pip install -r requirements.txt
+```
+
+2. Build Cython extension
+
+```shell
+USE_CYTHON=1 python setup.py build_ext --inplace
+```
+
+3. Perform changes
+
+4. Run tests
+
+```shell
+pytest
 ```
 
 Contributors
