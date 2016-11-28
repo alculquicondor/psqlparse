@@ -49,6 +49,11 @@ class SelectStmt(Statement):
         if self.with_clause:
             _tables |= self.with_clause.tables()
 
+        if self.larg:
+            _tables |= self.larg.tables()
+        if self.rarg:
+            _tables |= self.rarg.tables()
+
         return _tables
 
 

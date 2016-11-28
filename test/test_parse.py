@@ -129,6 +129,14 @@ class SelectQueriesTest(unittest.TestCase):
 
         self.assertEqual(len(stmt.target_list), 2)
 
+    def test_select_union(self):
+        query = "select * FROM table_one UNION select * FROM table_two"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        self.assertIsInstance(stmt.larg, nodes.SelectStmt)
+        self.assertIsInstance(stmt.rarg, nodes.SelectStmt)
+
 
 class InsertQueriesTest(unittest.TestCase):
 
@@ -272,3 +280,11 @@ class TablesTest(unittest.TestCase):
         stmt = parse(query).pop()
         self.assertEqual(stmt.tables(), {'dataset', 'table_one',
                                          'table_two'})
+
+    def test_select_union(self):
+        query = "select * FROM table_one UNION select * FROM table_two"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+
+        self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
+
