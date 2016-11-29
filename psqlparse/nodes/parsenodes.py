@@ -258,7 +258,21 @@ class AExpr(Node):
         self.location = obj.get('location')
 
     def tables(self):
-        return self.lexpr.tables() | self.rexpr.tables()
+        _tables = set()
+
+        if isinstance(self.lexpr, list):
+            for item in self.lexpr:
+                _tables |= item.tables()
+        elif isinstance(self.lexpr, Node):
+            _tables |= self.lexpr.tables()
+
+        if isinstance(self.rexpr, list):
+            for item in self.rexpr:
+                _tables |= item.tables()
+        elif isinstance(self.rexpr, Node):
+            _tables |= self.rexpr.tables()
+
+        return _tables
 
 
 class AConst(Node):

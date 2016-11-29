@@ -299,3 +299,8 @@ class TablesTest(unittest.TestCase):
 
         self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
 
+    def test_where_in_expr(self):
+        query = "SELECT * FROM my_table WHERE (a, b) in ('a', 'b')"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(stmt.tables(), {'my_table'})
