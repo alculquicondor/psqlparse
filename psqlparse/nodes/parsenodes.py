@@ -298,3 +298,14 @@ class TypeName(Node):
 
     def tables(self):
         return set()
+
+
+class TypeCast(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.type_name = build_from_item('typeName')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
