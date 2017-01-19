@@ -148,6 +148,15 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(str(func_call.args[0].fields[0]), 'geo1')
         self.assertEqual(str(func_call.args[1].fields[0]), 'geo2')
 
+    def test_select_with_null_test(self):
+        query = "SELECT * FROM my_table WHERE a is NULL"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt.where_clause, nodes.NullTest)
+
+        query = "SELECT * FROM my_table WHERE a is not NULL"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt.where_clause, nodes.NullTest)
+
 
 class InsertQueriesTest(unittest.TestCase):
 

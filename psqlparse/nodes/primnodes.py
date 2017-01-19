@@ -113,5 +113,4 @@ class NullTest(Node):
         self.location = obj.get('location')
 
     def tables(self):
-        _tables = self.arg.tables()
-        return _tables
+        return set()
