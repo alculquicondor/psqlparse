@@ -248,6 +248,11 @@ class TablesTest(unittest.TestCase):
         stmt = parse(query).pop()
         self.assertEqual(stmt.tables(), {'table_one', 'table_two'})
 
+    def test_simple_select_using_schema_names(self):
+        query = "SELECT * FROM table_one, public.table_one"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'table_one', 'public.table_one'})
+
     def test_select_with(self):
         query = ("WITH fake_table AS (SELECT * FROM inner_table) "
                  "SELECT * FROM fake_table")

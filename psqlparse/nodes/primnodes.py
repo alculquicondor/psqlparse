@@ -28,7 +28,11 @@ class RangeVar(Node):
         return '%s' % self.relname
 
     def tables(self):
-        return {self.relname}
+        components = [
+            getattr(self, name) for name in ('schemaname', 'relname')
+            if getattr(self, name, None) is not None
+        ]
+        return {'.'.join(components)}
 
 
 class JoinExpr(Node):
