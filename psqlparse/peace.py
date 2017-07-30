@@ -538,8 +538,6 @@ def type_cast(self, output):
 @node_printer(nodes.TypeName)
 def type_name(self, output):
     names = self.node.names
-#    if names[0].str == 'pg_catalog':
-#        names = names[1:]
     output.write('.'.join(str(n) for n in names))
 
 
