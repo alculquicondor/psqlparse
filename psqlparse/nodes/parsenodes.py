@@ -30,7 +30,7 @@ class SelectStmt(Statement):
 
         self.sort_clause = build_from_item(obj, 'sortClause')
         self.limit_offset = build_from_item(obj, 'limitOffset')
-        self.locking_clause = build_from_item(obj, 'locking_Clause')
+        self.locking_clause = build_from_item(obj, 'lockingClause')
         self.with_clause = build_from_item(obj, 'withClause')
 
         self.op = obj.get('op')
