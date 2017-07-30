@@ -251,6 +251,30 @@ def common_table_expr(self, output):
     output.newline_and_indent()
 
 
+@node_printer(nodes.DeleteStmt)
+def delete_stmt(self, output):
+    with output.push_indent():
+        if self.node.with_clause is not None:
+            output.write('WITH ')
+            output.print_node(self.node.with_clause)
+            output.newline_and_indent()
+
+        output.write('DELETE FROM ')
+        output.print_node(self.node.relation)
+        if self.node.using_clause is not None:
+            output.newline_and_indent()
+            output.write('USING ')
+            output.print_list(self.node.using_clause)
+        if self.node.where_clause is not None:
+            output.newline_and_indent()
+            output.write(' WHERE ')
+            output.print_node(self.node.where_clause)
+        if self.node.returning_list is not None:
+            output.newline_and_indent()
+            output.write(' RETURNING ')
+            output.print_list(self.node.returning_list)
+
+
 @node_printer(nodes.Float)
 def float(self, output):
     output.write(str(self.node))

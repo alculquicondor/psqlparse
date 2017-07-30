@@ -164,6 +164,12 @@ WHERE id=(select id from acme_persons)
 UPDATE accounts SET (contact_first_name, contact_last_name) =
     (SELECT first_name, last_name FROM salesmen
      WHERE salesmen.id = accounts.sales_id)
+;;
+DELETE FROM films
+;;
+DELETE FROM ONLY films
+;;
+DELETE FROM tasks WHERE status = 'DONE' RETURNING *
 """
 
 
@@ -179,3 +185,6 @@ def test_peace(sql):
         raise RuntimeError("Could not reparse %r" % indented)
     remove_location(indented_ast)
     assert orig_ast == indented_ast, "%r != %r" % (sql, indented)
+    # if 'DEFAULT' in indented:
+    #     print()
+    #     print(indented)
