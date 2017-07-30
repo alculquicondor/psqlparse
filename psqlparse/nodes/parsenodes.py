@@ -34,7 +34,7 @@ class SelectStmt(Statement):
         self.with_clause = build_from_item(obj, 'withClause')
 
         self.op = obj.get('op')
-        self.bool = obj.get('all')
+        self.all = obj.get('all')
         self.larg = build_from_item(obj, 'larg')
         self.rarg = build_from_item(obj, 'rarg')
 
