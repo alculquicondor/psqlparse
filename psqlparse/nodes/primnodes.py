@@ -1,5 +1,6 @@
 from .utils import build_from_item
 from .nodes import Node
+from .value import Name
 
 
 class RangeVar(Node):
@@ -45,7 +46,7 @@ class JoinExpr(Node):
         self.is_natural = obj.get('isNatural')
         self.larg = build_from_item(obj, 'larg')
         self.rarg = build_from_item(obj, 'rarg')
-        self.using_clause = build_from_item(obj, 'usingClause')
+        self.using_clause = build_from_item(obj, 'usingClause', 'Literal')
         self.quals = build_from_item(obj, 'quals')
         self.alias = build_from_item(obj, 'alias')
 
@@ -62,8 +63,8 @@ class JoinExpr(Node):
 class Alias(Node):
 
     def __init__(self, obj):
-        self.aliasname = obj.get('aliasname')
-        self.colnames = build_from_item(obj, 'colnames')
+        self.aliasname = Name.from_string(obj.get('aliasname'))
+        self.colnames = build_from_item(obj, 'colnames', 'Name')
 
     def tables(self):
         return set()

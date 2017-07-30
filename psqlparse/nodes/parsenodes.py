@@ -2,6 +2,7 @@ import six
 
 from .utils import build_from_item
 from .nodes import Node
+from .value import Name
 
 
 class Statement(Node):
@@ -159,8 +160,8 @@ class WithClause(Node):
 class CommonTableExpr(Node):
 
     def __init__(self, obj):
-        self.ctename = obj.get('ctename')
-        self.aliascolnames = build_from_item(obj, 'aliascolnames')
+        self.ctename = Name.from_string(obj.get('ctename'))
+        self.aliascolnames = build_from_item(obj, 'aliascolnames', 'Name')
         self.ctequery = build_from_item(obj, 'ctequery')
         self.location = obj.get('location')
         self.cterecursive = obj.get('cterecursive')
@@ -203,7 +204,7 @@ class ResTarget(Node):
     """
 
     def __init__(self, obj):
-        self.name = obj.get('name')
+        self.name = Name.from_string(obj.get('name'))
         self.indirection = build_from_item(obj, 'indirection')
         self.val = build_from_item(obj, 'val')
         self.location = obj.get('location')
@@ -253,7 +254,7 @@ class AExpr(Node):
 
     def __init__(self, obj):
         self.kind = obj.get('kind')
-        self.name = build_from_item(obj, 'name')
+        self.name = build_from_item(obj, 'name', 'Literal')
         self.lexpr = build_from_item(obj, 'lexpr')
         self.rexpr = build_from_item(obj, 'rexpr')
         self.location = obj.get('location')
