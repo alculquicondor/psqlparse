@@ -22,17 +22,17 @@ class Serializer(io.StringIO):
     def newline_and_indent(self):
         self.write(' ')
 
-    def _indent(self, amount=0):
+    def indent(self, amount=0):
         pass
 
-    def _dedent(self):
+    def dedent(self):
         pass
 
     @contextmanager
     def push_indent(self, amount=0):
-        self._indent(amount)
+        self.indent(amount)
         yield
-        self._dedent()
+        self.dedent()
 
     def print_node(self, node):
         NodePrinter.get(node)(self)
@@ -106,11 +106,11 @@ class PrettyPrinter(Serializer):
             self.column += count
         return count
 
-    def _indent(self, amount=0):
+    def indent(self, amount=0):
         self.indentation_stack.append(self.current_indent)
         self.current_indent = self.column + amount
 
-    def _dedent(self):
+    def dedent(self):
         self.current_indent = self.indentation_stack.pop()
 
     def newline_and_indent(self):
