@@ -8,6 +8,11 @@ from .value import Name
 
 class RangeVar(Node):
 
+    # NB: these changed in PG 10!
+    INH_NO = 0                  #  Do NOT scan child tables
+    INH_YES = 1                 #  DO scan child tables
+    INH_DEFAULT = 2             #  Use current SQL_inheritance option
+
     def __init__(self, obj):
         """
         Range variable, used in FROM clauses
