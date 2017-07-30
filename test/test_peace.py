@@ -157,7 +157,4 @@ def test_peace(sql):
     except:
         raise RuntimeError("Could not reparse %r" % indented)
     remove_location(indented_ast)
-    if 'CURRENT_DATE' in indented:
-        print()
-        print(indented)
     assert orig_ast == indented_ast, "%r != %r" % (sql, indented)
