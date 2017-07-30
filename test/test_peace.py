@@ -29,6 +29,8 @@ def remove_location(d):
 SQLS = """
 SELECT pc.id as x, common.func(pc.name, ' '), 123 FROM ns.table
 ;;
+SELECT pc.id FROM ONLY ns.table
+;;
 SELECT 'accbf276-705b-11e7-b8e4-0242ac120002'::UUID as "X"
 ;;
 SELECT x.id, (select count(*) FROM sometable as y where y.id = x.id) count

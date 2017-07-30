@@ -383,6 +383,8 @@ def range_subselect(self, output):
 
 @node_printer(nodes.RangeVar)
 def range_var(self, output):
+    if self.node.inh_opt == nodes.RangeVar.INH_NO:
+        output.write('ONLY ')
     if self.node.schemaname:
         output.write(self.node.schemaname)
         output.write('.')
