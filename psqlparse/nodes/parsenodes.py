@@ -93,7 +93,7 @@ class UpdateStmt(Statement):
 
     def __init__(self, obj):
         self.relation = build_from_item(obj, 'relation')
-        self.target_list = build_from_item(obj, 'targetList')
+        self.target_list = build_from_item(obj, 'targetList', 'ResTargetUpdate')
         self.where_clause = build_from_item(obj, 'whereClause')
         self.from_clause = build_from_item(obj, 'fromClause')
         self.returning_list = build_from_item(obj, 'returningList')
@@ -218,6 +218,10 @@ class ResTarget(Node):
 
     def tables(self):
         return set()
+
+
+class ResTargetUpdate(ResTarget):
+    "The UPDATE specific variant."
 
 
 class ColumnRef(Node):
@@ -467,6 +471,16 @@ class AArrayExpr(Node):
     def __init__(self, obj):
         self.elements = build_from_item(obj, 'elements')
         self.location = obj.get('location')
+
+    def tables(self):
+        return set()
+
+
+class MultiAssignRef(Node):
+    def __init__(self, obj):
+        self.source = build_from_item(obj, 'source')
+        self.colno = obj.get('colno')
+        self.ncolumns = obj.get('ncolumns')
 
     def tables(self):
         return set()
