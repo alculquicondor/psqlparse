@@ -336,6 +336,11 @@ def locking_clause(self, output):
         output.write((None, 'SKIP LOCKED', 'NOWAIT')[self.node.wait_policy])
 
 
+@node_printer(nodes.MultiAssignRef)
+def multi_assign_ref(self, output):
+    output.print_node(self.node.source)
+
+
 @node_printer(nodes.Name)
 def name(self, output):
     output.write(str(self.node))
@@ -395,6 +400,25 @@ def res_target(self, output):
     if name:
         output.write(' AS ')
         output.print_node(name)
+
+
+@node_printer(nodes.ResTargetUpdate)
+def res_target_update(self, output):
+    if isinstance(self.node.val, nodes.MultiAssignRef):
+        if self.node.val.colno == 1:
+            output.write('(  ')
+            output.indent(-2)
+        output.print_node(self.node.name)
+        if self.node.val.colno == self.node.val.ncolumns:
+            output.dedent()
+            output.write(') = ')
+            output.print_node(self.node.val)
+    else:
+        output.print_node(self.node.name)
+        if self.node.indirection is not None:
+            output.print_list(self.node.indirection)
+        output.write(' = ')
+        output.print_node(self.node.val)
 
 
 @node_printer(nodes.SelectStmt)
@@ -477,6 +501,11 @@ def select_stmt(self, output):
                 output.print_list(self.node.locking_clause)
 
 
+@node_printer(nodes.SetToDefault)
+def set_to_default(self, output):
+    output.write('DEFAULT')
+
+
 @node_printer(nodes.SortBy)
 def sort_by(self, output):
     output.print_node(self.node.node)
@@ -539,6 +568,33 @@ def type_cast(self, output):
 def type_name(self, output):
     names = self.node.names
     output.write('.'.join(str(n) for n in names))
+
+
+@node_printer(nodes.UpdateStmt)
+def update_stmt(self, output):
+    with output.push_indent():
+        if self.node.with_clause is not None:
+            output.write('WITH ')
+            output.print_node(self.node.with_clause)
+            output.newline_and_indent()
+
+        output.write('UPDATE ')
+        output.print_node(self.node.relation)
+        output.newline_and_indent()
+        output.write('   SET ')
+        output.print_list(self.node.target_list)
+        if self.node.from_clause is not None:
+            output.newline_and_indent()
+            output.write('  FROM ')
+            output.print_list(self.node.from_clause)
+        if self.node.where_clause is not None:
+            output.newline_and_indent()
+            output.write(' WHERE ')
+            output.print_node(self.node.where_clause)
+        if self.node.returning_list is not None:
+            output.newline_and_indent()
+            output.write(' RETURNING ')
+            output.print_list(self.node.returning_list)
 
 
 @node_printer(nodes.WindowDef)
