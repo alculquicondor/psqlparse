@@ -3,6 +3,9 @@ from .nodes import Node
 from .value import Name
 
 
+# See https://github.com/postgres/postgres/blob/master/src/include/nodes/primnodes.h
+
+
 class RangeVar(Node):
 
     def __init__(self, obj):
@@ -40,6 +43,11 @@ class JoinExpr(Node):
     """
     For SQL JOIN expressions
     """
+
+    JOIN_INNER = 0              #  matching tuple pairs only
+    JOIN_LEFT = 1               #  pairs + unmatched LHS tuples
+    JOIN_FULL = 2               #  pairs + unmatched LHS + unmatched RHS
+    JOIN_RIGHT = 3              #  pairs + unmatched RHS tuples
 
     def __init__(self, obj):
         self.jointype = obj.get('jointype')
