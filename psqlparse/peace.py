@@ -9,7 +9,7 @@
 from contextlib import contextmanager
 from inspect import isclass
 
-from six import io
+from six import PY2, StringIO
 
 from . import nodes, parse
 
@@ -39,10 +39,15 @@ def node_printer(node_class):
     return decorator
 
 
-class Serializer(io.StringIO):
+class Serializer(StringIO, object):
     def __init__(self):
-        super().__init__()
+        super(Serializer, self).__init__()
         self.expression_level = 0
+
+    if PY2:
+        def write(self, s):
+            super(Serializer, self).write(s)
+            return len(s)
 
     def newline_and_indent(self):
         self.write(' ')
@@ -117,7 +122,7 @@ class PrettyPrinter(Serializer):
     def __init__(self,
                  align_expression_operands=True,
                  separate_statements=True):
-        super().__init__()
+        super(PrettyPrinter, self).__init__()
         self.align_expression_operands = align_expression_operands
         self.separate_statements = separate_statements
         self.column = 0
@@ -125,7 +130,7 @@ class PrettyPrinter(Serializer):
         self.indentation_stack = []
 
     def write(self, s):
-        count = super().write(s)
+        count = super(PrettyPrinter, self).write(s)
         if s == '\n':
             self.column = 0
         else:
