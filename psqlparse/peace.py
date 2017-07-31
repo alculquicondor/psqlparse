@@ -9,7 +9,7 @@
 from contextlib import contextmanager
 from inspect import isclass
 
-from six import PY2, StringIO
+from six import PY2, StringIO, string_types
 
 from . import nodes, parse
 
@@ -106,8 +106,10 @@ class Serializer(StringIO, object):
             self.write(')')
 
     def __call__(self, sql):
+        if isinstance(sql, string_types):
+            sql = parse(sql)
         first = True
-        for statement in parse(sql):
+        for statement in sql:
             if first:
                 first = False
             else:
