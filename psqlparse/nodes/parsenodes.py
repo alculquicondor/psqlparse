@@ -484,3 +484,15 @@ class MultiAssignRef(Node):
 
     def tables(self):
         return set()
+
+
+class AIndices(Node):
+    def __init__(self, obj):
+        # NB: this has been added in 9.6, see
+        # https://github.com/postgres/postgres/blob/REL9_6_STABLE/src/include/nodes/parsenodes.h#L364
+        self.is_slice = obj.get('is_slice')
+        self.lidx = build_from_item(obj, 'lidx')
+        self.uidx = build_from_item(obj, 'uidx')
+
+    def tables(self):
+        return set()
