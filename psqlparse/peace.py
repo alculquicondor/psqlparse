@@ -251,6 +251,8 @@ def delete_stmt(node, output):
             output.write('WITH ')
             output.print_node(node.with_clause)
             output.newline_and_indent()
+            output.write('  ')
+            output.indent()
 
         output.write('DELETE FROM ')
         output.print_node(node.relation)
@@ -266,6 +268,9 @@ def delete_stmt(node, output):
             output.newline_and_indent()
             output.write(' RETURNING ')
             output.print_list(node.returning_list)
+
+        if node.with_clause is not None:
+            output.dedent()
 
 
 @node_printer(nodes.Float)
@@ -447,6 +452,8 @@ def select_stmt(node, output):
             output.write('WITH ')
             output.print_node(node.with_clause)
             output.newline_and_indent()
+            output.write('  ')
+            output.indent()
 
         if node.values_lists is not None:
             output.write('(VALUES (  ')
@@ -518,6 +525,9 @@ def select_stmt(node, output):
                 output.newline_and_indent()
                 output.write('FOR ')
                 output.print_list(node.locking_clause)
+
+        if node.with_clause is not None:
+            output.dedent()
 
 
 @node_printer(nodes.SetToDefault)
@@ -596,6 +606,8 @@ def update_stmt(node, output):
             output.write('WITH ')
             output.print_node(node.with_clause)
             output.newline_and_indent()
+            output.write('  ')
+            output.indent()
 
         output.write('UPDATE ')
         output.print_node(node.relation)
@@ -614,6 +626,9 @@ def update_stmt(node, output):
             output.newline_and_indent()
             output.write(' RETURNING ')
             output.print_list(node.returning_list)
+
+        if node.with_clause is not None:
+            output.dedent()
 
 
 @node_printer(nodes.WindowDef)
