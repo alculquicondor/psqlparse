@@ -4,6 +4,7 @@
 .cache
 .coveragerc
 .idea/
+.tox/
 __pycache__/
 build/
 dist/
