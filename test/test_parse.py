@@ -128,6 +128,21 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(stmt, nodes.SelectStmt)
 
         self.assertEqual(len(stmt.target_list), 2)
+    
+    def test_select_order_by_default(self):
+        query = "SELECT * FROM my_table ORDER BY my_table.id"
+        stmt = parse(query).pop()
+        orderby = stmt.sort_clause.pop()
+
+        self.assertIsInstance(orderby, nodes.parsenodes.SortBy)
+        self.assertEqual(len(orderby.node.fields), 2)
+
+        name_column = orderby.node.fields.pop()
+        name_table = orderby.node.fields.pop()
+
+        self.assertEqual(str(name_column), 'id')
+        self.assertEqual(str(name_table), 'my_table')
+
 
     def test_select_union(self):
         query = "select * FROM table_one UNION select * FROM table_two"

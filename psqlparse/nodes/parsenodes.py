@@ -284,3 +284,43 @@ class AConst(Node):
 
     def tables(self):
         return set()
+
+
+class SortBy(Node):
+
+    def __init__(self, obj):
+        self.node = build_from_item(obj, 'node')
+        self.sortby_dir = obj.get('sortby_dir')
+        self.sortby_nulls = obj.get('sortby_nulls')
+        self.use_op = build_from_item(obj, 'useOp')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
+
+
+class TypeName(Node):
+    
+    def __init__(self, obj):
+        self.names = build_from_item(obj, 'names')
+        self.type_oid = obj.get('typeOid')
+        self.setof = obj.get('setof')
+        self.pct_type = obj.get('pct_type')
+        self.typmods = build_from_item(obj, 'typmods')
+        self.typemod = obj.get('typemod')
+        self.array_bounds = build_from_item(obj, 'arrayBounds')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
+
+
+class TypeCast(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.type_name = build_from_item('typeName')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
