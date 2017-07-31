@@ -40,31 +40,57 @@ def node_printer(node_class):
 
 
 class Serializer(StringIO, object):
-    def __init__(self):
+    """Basic SQL syntax tree serializer.
+
+    :param separate_statements: a boolean, ``True`` by default, that tells whether multiple
+                                statements shall be separated by an empty line
+
+    This implement the basic machinery needed to serialize the syntax tree produced by
+    :func:`~.parser.parse()` back to a textual representation, without any adornment.
+    """
+
+    def __init__(self, separate_statements=True):
         super(Serializer, self).__init__()
+        self.separate_statements = separate_statements
         self.expression_level = 0
 
     if PY2:
+        # Python 2/3 compatibility shim, as Python 2 version returns None
         def write(self, s):
             super(Serializer, self).write(s)
             return len(s)
 
     def newline_and_indent(self):
+        "Emit a single whitespace, shall be overridden by the prettifier subclass."
+
         self.write(' ')
 
     def indent(self, amount=0):
-        pass
+        "Do nothing, shall be overridden by the prettifier subclass."
 
     def dedent(self):
-        pass
+        "Do nothing, shall be overridden by the prettifier subclass."
 
     @contextmanager
     def push_indent(self, amount=0):
+        """Create a context manager that calls :meth:`indent` and :meth:`dedent` around a block
+        of code.
+
+        This is just an helper to simplify code that adjust the indentation level:
+
+        .. code-block:: python
+
+          with output.push_indent(4):
+              # code that emits something with the new indentation
+        """
+
         self.indent(amount)
         yield
         self.dedent()
 
     def print_node(self, node):
+        "Lookup the specific printer for the given `node` and execute it."
+
         printer = get_printer_for_node(node)
         printer(node, self)
 
@@ -80,12 +106,25 @@ class Serializer(StringIO, object):
             self.print_node(item)
 
     def print_list(self, items, sep=', ', relative_indent=None, standalone_items=True):
+        """Execute :meth:`print_node` on all the `items`, separating them with `sep`.
+
+        :param items: a sequence of :class:`~.nodes.Node` instances
+        :param sep: the separator between them
+        :param relative_indent: if given, the relative amount of indentation to apply before
+                                the first item, by default computed automatically from the
+                                length of the separator `sep`
+        :param standalone_items: a boolean that tells whether a newline will be emitted before
+                                 each item
+        """
+
         if relative_indent is None:
             relative_indent = -len(sep)
         with self.push_indent(relative_indent):
             self._print_list_items(items, sep, standalone_items)
 
     def print_expression(self, items, operator):
+        "Emit a list of `items` between parens, using `operator` as separator."
+
         self.expression_level += 1
         if self.expression_level > 1:
             if self.align_expression_operands:
@@ -106,6 +145,13 @@ class Serializer(StringIO, object):
             self.write(')')
 
     def __call__(self, sql):
+        """Main entry point: execute :meth:`print_node` on each statement in `sql`.
+
+        :param sql: either the source SQL in textual form, or a syntax tree produced by
+                    :func:`~.parser.parse`
+        :returns: a string with the equivalent SQL obtained by serializing the syntax tree
+        """
+
         if isinstance(sql, string_types):
             sql = parse(sql)
         first = True
@@ -122,17 +168,26 @@ class Serializer(StringIO, object):
 
 
 class PrettyPrinter(Serializer):
-    def __init__(self,
-                 align_expression_operands=True,
-                 separate_statements=True):
-        super(PrettyPrinter, self).__init__()
+    """A serializer that emits a prettified representation of SQL.
+
+    :param align_expression_operands: whether to vertically align the operands of an expression
+    :param \*\*options: other options accepted by :class:`Serializer`
+    """
+
+    def __init__(self, align_expression_operands=True, **options):
+        super(PrettyPrinter, self).__init__(**options)
         self.align_expression_operands = align_expression_operands
-        self.separate_statements = separate_statements
         self.column = 0
         self.current_indent = 0
         self.indentation_stack = []
 
     def write(self, s):
+        """Write string `s` to the stream, adjusting the `column` accordingly, in particular
+        setting it to 0 when `s` is a newline.
+
+        Return the number of character written to the stream.
+        """
+
         count = super(PrettyPrinter, self).write(s)
         if s == '\n':
             self.column = 0
@@ -141,13 +196,21 @@ class PrettyPrinter(Serializer):
         return count
 
     def indent(self, amount=0):
+        """Push current indentation level to the stack, then set it adding `amount` to the
+        current `column`.
+        """
+
         self.indentation_stack.append(self.current_indent)
         self.current_indent = self.column + amount
 
     def dedent(self):
+        "Pop the indentation level from the stack and set `current_indent` to that."
+
         self.current_indent = self.indentation_stack.pop()
 
     def newline_and_indent(self):
+        "Emit a newline followed by a number of whitespaces equal to the current indentation."
+
         self.write('\n')
         self.write(' ' * self.current_indent)
 
@@ -158,7 +221,7 @@ def format(sql, **options):
 
 
 ##
-## Specific Node printers
+## Specific Node printers, please keep them in alphabetic order
 ##
 
 
