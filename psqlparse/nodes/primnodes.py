@@ -18,7 +18,7 @@ class RangeVar(Node):
         self.relname = obj.get('relname')
         self.inh_opt = obj.get('inhOpt')
         self.relpersistence = obj.get('relpersistence')
-        self.alias = obj.get('alias')
+        self.alias = build_from_item(obj, 'alias')
         self.location = obj['location']
 
     def __repr__(self):
