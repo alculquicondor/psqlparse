@@ -456,7 +456,11 @@ def select_stmt(node, output):
             output.indent()
 
         if node.values_lists is not None:
-            output.write('(VALUES (  ')
+            # Is this a SELECT ... FROM (VALUES (...))?
+            require_parens = getattr(node.values_lists[0][0], '_add_outer_parens', False)
+            if require_parens:
+                output.write('(')
+            output.write('VALUES (  ')
             with output.push_indent(-5):
                 first = True
                 for values in node.values_lists:
@@ -467,6 +471,7 @@ def select_stmt(node, output):
                         output.write(', (  ')
                     output.print_list(values)
                     output.write(')')
+            if require_parens:
                 output.write(')')
         elif node.target_list is None:
             with output.push_indent():
@@ -490,6 +495,13 @@ def select_stmt(node, output):
             output.write(' ')
             output.print_list(node.target_list)
             if node.from_clause is not None:
+                # Add a recognizable marker to distinguish the
+                # SELECT ... FROM (VALUES (...)) case from the
+                # INSERT INTO ... VALUES (...)
+                for clause in node.from_clause:
+                    if (isinstance(clause, nodes.RangeSubselect)
+                        and clause.subquery.values_lists is not None):
+                        clause.subquery.values_lists[0][0]._add_outer_parens = True
                 output.newline_and_indent()
                 output.write('FROM ')
                 output.print_list(node.from_clause)
