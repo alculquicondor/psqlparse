@@ -165,6 +165,10 @@ UPDATE accounts SET (contact_first_name, contact_last_name) =
     (SELECT first_name, last_name FROM salesmen
      WHERE salesmen.id = accounts.sales_id)
 ;;
+UPDATE tictactoe
+SET board[1:3][1:3] = '{{" "," "," "},{" "," "," "},{" "," "," "}}'
+WHERE game = 1
+;;
 DELETE FROM films
 ;;
 DELETE FROM ONLY films

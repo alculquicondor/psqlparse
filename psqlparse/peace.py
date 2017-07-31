@@ -68,21 +68,22 @@ class Serializer(StringIO, object):
         printer = get_printer_for_node(node)
         printer(node, self)
 
-    def _print_list_items(self, items, sep):
+    def _print_list_items(self, items, sep, newline=True):
         first = True
         for item in items:
             if first:
                 first = False
             else:
-                self.newline_and_indent()
+                if newline:
+                    self.newline_and_indent()
                 self.write(sep)
             self.print_node(item)
 
-    def print_list(self, items, sep=', ', relative_indent=None):
+    def print_list(self, items, sep=', ', relative_indent=None, standalone_items=True):
         if relative_indent is None:
             relative_indent = -len(sep)
         with self.push_indent(relative_indent):
-            self._print_list_items(items, sep)
+            self._print_list_items(items, sep, standalone_items)
 
     def print_expression(self, items, operator):
         self.expression_level += 1
@@ -458,7 +459,7 @@ def res_target_update(node, output):
     else:
         output.print_node(node.name)
         if node.indirection is not None:
-            output.print_list(node.indirection)
+            output.print_list(node.indirection, '', standalone_items=False)
         output.write(' = ')
         output.print_node(node.val)
 
