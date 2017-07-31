@@ -332,6 +332,44 @@ def integer(node, output):
     output.write(str(node))
 
 
+@node_printer(nodes.InsertStmt)
+def insert_stmt(node, output):
+    with output.push_indent():
+        if node.with_clause is not None:
+            output.write('WITH ')
+            output.print_node(node.with_clause)
+            output.newline_and_indent()
+            output.write('  ')
+            output.indent()
+
+        output.write('INSERT INTO ')
+        output.print_node(node.relation)
+        if node.cols is not None:
+            output.write(' (  ')
+            output.print_list(node.cols)
+            output.write(')')
+            output.newline_and_indent()
+        else:
+            output.write(' ')
+        if node.select_stmt is not None:
+            output.newline_and_indent()
+            output.write('  ')
+            output.print_node(node.select_stmt)
+        else:
+            output.write('DEFAULT VALUES')
+        if node.on_conflict_clause is not None:
+            output.newline_and_indent()
+            output.write('ON CONFLICT ')
+            output.print_list(node.on_conflict_clause)
+        if node.returning_list is not None:
+            output.newline_and_indent()
+            output.write('RETURNING ')
+            output.print_list(node.returning_list)
+
+        if node.with_clause is not None:
+            output.dedent()
+
+
 @node_printer(nodes.JoinExpr)
 def join_expr(node, output):
     with output.push_indent(-3):
@@ -438,11 +476,15 @@ def range_var(node, output):
 
 @node_printer(nodes.ResTarget)
 def res_target(node, output):
-    output.print_node(node.val)
-    name = node.name
-    if name:
-        output.write(' AS ')
-        output.print_node(name)
+    if node.val is not None:
+        output.print_node(node.val)
+        if node.name is not None:
+            output.write(' AS ')
+            output.print_node(node.name)
+    else:
+        output.print_node(node.name)
+    if node.indirection:
+        output.print_list(node.indirection, '', standalone_items=False)
 
 
 @node_printer(nodes.ResTargetUpdate)

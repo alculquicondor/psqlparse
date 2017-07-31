@@ -174,6 +174,29 @@ DELETE FROM films
 DELETE FROM ONLY films
 ;;
 DELETE FROM tasks WHERE status = 'DONE' RETURNING *
+;;
+INSERT INTO films VALUES ('UA502', 'Bananas', 105, '1971-07-13', 'Comedy', '82 minutes')
+;;
+INSERT INTO films (code, title, did, date_prod, kind) VALUES
+    ('B6717', 'Tampopo', 110, '1985-02-10', 'Comedy'),
+    ('HG120', 'The Dinner Game', 140, DEFAULT, 'Comedy')
+;;
+INSERT INTO films DEFAULT VALUES
+;;
+INSERT INTO films SELECT * FROM tmp_films WHERE date_prod < '2004-05-07'
+;;
+INSERT INTO distributors (did, dname) VALUES (DEFAULT, 'XYZ Widgets')
+   RETURNING did
+;;
+INSERT INTO tictactoe (game, board[1:3][1:3])
+    VALUES (1, '{{" "," "," "},{" "," "," "},{" "," "," "}}')
+;;
+WITH upd AS (
+  UPDATE employees SET sales_count = sales_count + 1 WHERE id =
+    (SELECT sales_person FROM accounts WHERE name = 'Acme Corporation')
+    RETURNING *
+)
+INSERT INTO employees_log SELECT *, current_timestamp FROM upd
 """
 
 
