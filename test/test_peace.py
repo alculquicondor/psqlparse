@@ -8,8 +8,7 @@
 
 import pytest
 
-from psqlparse.parser import parse_dict
-from psqlparse.peace import PrettyPrinter
+from psqlparse import format, parse_dict
 
 
 def remove_location(d):
@@ -204,8 +203,7 @@ INSERT INTO employees_log SELECT *, current_timestamp FROM upd
 def test_peace(sql):
     orig_ast = parse_dict(sql)
     remove_location(orig_ast)
-    printer = PrettyPrinter()
-    indented = printer(sql)
+    indented = format(sql)
     try:
         indented_ast = parse_dict(indented)
     except:

@@ -27,8 +27,8 @@ used_tables = statements[0].tables()  # ['my_table']
 To reformat a statement:
 
 ```python
-from psqlparse.peace import PrettyPrinter
-print(PrettyPrinter()('SELECT a.id, b.value'
+import psqlparse
+print(sqlparse.format('SELECT a.id, b.value'
                       ' from mytable a join other b using (id)'
                       ' where a.id > 0 and a.id < 10'))
 ```

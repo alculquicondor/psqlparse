@@ -152,6 +152,11 @@ class PrettyPrinter(Serializer):
         self.write(' ' * self.current_indent)
 
 
+def format(sql, **options):
+    printer = PrettyPrinter(**options)
+    return printer(sql)
+
+
 ##
 ## Specific Node printers
 ##
