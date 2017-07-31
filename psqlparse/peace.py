@@ -14,6 +14,31 @@ from six import io
 from . import nodes, parse
 
 
+NODE_PRINTERS = {}
+"Registry of specialized printers."
+
+
+def get_printer_for_node(node):
+    "Get specific printer implementation for given `node` instance."
+
+    try:
+        return NODE_PRINTERS[type(node)]
+    except KeyError:
+        raise NotImplementedError("Printer for node %r is not implemented yet"
+                                  % node.__class__.__name__)
+
+
+def node_printer(node_class):
+    "Decorator to register a specific printer implementation for given `node_class`."
+
+    def decorator(impl):
+        assert isclass(node_class)
+        assert node_class not in NODE_PRINTERS
+        NODE_PRINTERS[node_class] = impl
+        return impl
+    return decorator
+
+
 class Serializer(io.StringIO):
     def __init__(self):
         super().__init__()
@@ -35,7 +60,8 @@ class Serializer(io.StringIO):
         self.dedent()
 
     def print_node(self, node):
-        NodePrinter.get(node)(self)
+        printer = get_printer_for_node(node)
+        printer(node, self)
 
     def _print_list_items(self, items, sep):
         first = True
@@ -129,337 +155,310 @@ class PrettyPrinter(Serializer):
     #             self._print_list_items(items, sep)
 
 
-class NodePrinter:
-    IMPL_FOR_NODE_CLASS = {}
-
-    def __init__(self, node):
-        self.node = node
-
-    def __call__(self, output):
-        raise NotImplementedError
-
-    @classmethod
-    def get(cls, node):
-        try:
-            return cls.IMPL_FOR_NODE_CLASS[type(node)](node)
-        except KeyError:
-            if isinstance(node, dict):
-                from pprint import pprint
-                pprint(node)
-            raise
-
-
-def node_printer(node_class):
-    def decorator(impl):
-        if isclass(impl):
-            printer_class = impl
-        else:
-            printer_class = type(node_class.__name__, (NodePrinter,),
-                                 {'__call__': impl})
-        NodePrinter.IMPL_FOR_NODE_CLASS[node_class] = printer_class
-        return printer_class
-    return decorator
+##
+## Specific Node printers
+##
 
 
 @node_printer(nodes.AArrayExpr)
-def a_array_expr(self, output):
+def a_array_expr(node, output):
     output.write('ARRAY[')
-    output.print_list(self.node.elements)
+    output.print_list(node.elements)
     output.write(']')
 
 
 @node_printer(nodes.AConst)
-def a_const(self, output):
-    output.print_node(self.node.val)
+def a_const(node, output):
+    output.print_node(node.val)
 
 
 @node_printer(nodes.AExpr)
-def a_expr(self, output):
-    output.print_node(self.node.lexpr)
-    for operator in self.node.name:
+def a_expr(node, output):
+    output.print_node(node.lexpr)
+    for operator in node.name:
         output.write(' ')
         output.print_node(operator)
     output.write(' ')
-    output.print_node(self.node.rexpr)
+    output.print_node(node.rexpr)
 
 
 @node_printer(nodes.Alias)
-def alias(self, output):
-    output.print_node(self.node.aliasname)
-    if self.node.colnames is not None:
+def alias(node, output):
+    output.print_node(node.aliasname)
+    if node.colnames is not None:
         output.write(' (  ')
-        output.print_list(self.node.colnames)
+        output.print_list(node.colnames)
         output.write(')')
 
 
 @node_printer(nodes.BoolExpr)
-def bool_expr(self, output):
-    operator = ('AND ', 'OR ')[self.node.boolop]
-    output.print_expression(self.node.args, operator)
+def bool_expr(node, output):
+    operator = ('AND ', 'OR ')[node.boolop]
+    output.print_expression(node.args, operator)
 
 
 @node_printer(nodes.CaseExpr)
-def case_expr(self, output):
+def case_expr(node, output):
     with output.push_indent():
         output.write('CASE')
-        if self.node.arg is not None:
+        if node.arg is not None:
             output.write(' ')
-            output.print_node(self.node.arg)
+            output.print_node(node.arg)
         output.newline_and_indent()
         output.write('  ')
         with output.push_indent():
-            output.print_list(self.node.args, '')
-            if self.node.def_result is not None:
+            output.print_list(node.args, '')
+            if node.def_result is not None:
                 output.newline_and_indent()
                 output.write('ELSE ')
-                output.print_node(self.node.def_result)
+                output.print_node(node.def_result)
         output.newline_and_indent()
         output.write('END')
 
 
 @node_printer(nodes.CaseWhen)
-def case_when(self, output):
+def case_when(node, output):
     output.write('WHEN ')
     with output.push_indent(-3):
-        output.print_node(self.node.expr)
+        output.print_node(node.expr)
         output.newline_and_indent()
         output.write('THEN ')
-        output.print_node(self.node.result)
+        output.print_node(node.result)
 
 
 @node_printer(nodes.ColumnRef)
-def column_ref(self, output):
+def column_ref(node, output):
     output.write('.'.join('*' if isinstance(c, nodes.AStar) else c.str
-                          for c in self.node.fields))
+                          for c in node.fields))
 
 
 @node_printer(nodes.CommonTableExpr)
-def common_table_expr(self, output):
-    output.print_node(self.node.ctename)
-    if self.node.aliascolnames is not None:
+def common_table_expr(node, output):
+    output.print_node(node.ctename)
+    if node.aliascolnames is not None:
         output.write('(')
-        if len(self.node.aliascolnames) > 1:
+        if len(node.aliascolnames) > 1:
             output.write('  ')
-        output.print_list(self.node.aliascolnames)
+        output.print_list(node.aliascolnames)
         output.write(')')
         output.newline_and_indent()
     else:
         output.write(' ')
     output.write('AS (')
-    output.print_node(self.node.ctequery)
+    output.print_node(node.ctequery)
     output.write(')')
     output.newline_and_indent()
 
 
 @node_printer(nodes.DeleteStmt)
-def delete_stmt(self, output):
+def delete_stmt(node, output):
     with output.push_indent():
-        if self.node.with_clause is not None:
+        if node.with_clause is not None:
             output.write('WITH ')
-            output.print_node(self.node.with_clause)
+            output.print_node(node.with_clause)
             output.newline_and_indent()
 
         output.write('DELETE FROM ')
-        output.print_node(self.node.relation)
-        if self.node.using_clause is not None:
+        output.print_node(node.relation)
+        if node.using_clause is not None:
             output.newline_and_indent()
             output.write('USING ')
-            output.print_list(self.node.using_clause)
-        if self.node.where_clause is not None:
+            output.print_list(node.using_clause)
+        if node.where_clause is not None:
             output.newline_and_indent()
             output.write(' WHERE ')
-            output.print_node(self.node.where_clause)
-        if self.node.returning_list is not None:
+            output.print_node(node.where_clause)
+        if node.returning_list is not None:
             output.newline_and_indent()
             output.write(' RETURNING ')
-            output.print_list(self.node.returning_list)
+            output.print_list(node.returning_list)
 
 
 @node_printer(nodes.Float)
-def float(self, output):
-    output.write(str(self.node))
+def float(node, output):
+    output.write(str(node))
 
 
 @node_printer(nodes.FuncCall)
-def func_call(self, output):
-    output.write('.'.join(n.str for n in self.node.funcname))
+def func_call(node, output):
+    output.write('.'.join(n.str for n in node.funcname))
     output.write('(')
-    if self.node.agg_distinct:
+    if node.agg_distinct:
         output.write('DISTINCT ')
-    if self.node.args is None:
-        if self.node.agg_star:
+    if node.args is None:
+        if node.agg_star:
             output.write('*')
     else:
-        if len(self.node.args) > 1:
+        if len(node.args) > 1:
             output.write('  ')
-        output.print_list(self.node.args)
-    if self.node.agg_order is not None:
-        if self.node.agg_within_group is None:
+        output.print_list(node.args)
+    if node.agg_order is not None:
+        if node.agg_within_group is None:
             output.write(' ORDER BY ')
-            output.print_list(self.node.agg_order)
+            output.print_list(node.agg_order)
         else:
             output.write(') WITHIN GROUP (ORDER BY ')
-            output.print_list(self.node.agg_order)
+            output.print_list(node.agg_order)
     output.write(')')
-    if self.node.agg_filter is not None:
+    if node.agg_filter is not None:
         output.write(' FILTER (WHERE ')
-        output.print_node(self.node.agg_filter)
+        output.print_node(node.agg_filter)
         output.write(')')
-    if self.node.over is not None:
+    if node.over is not None:
         output.write(' OVER ')
-        output.print_node(self.node.over)
+        output.print_node(node.over)
 
 
 @node_printer(nodes.Integer)
-def integer(self, output):
-    output.write(str(self.node))
+def integer(node, output):
+    output.write(str(node))
 
 
 @node_printer(nodes.JoinExpr)
-def join_expr(self, output):
+def join_expr(node, output):
     with output.push_indent(-3):
-        output.print_node(self.node.larg)
+        output.print_node(node.larg)
         output.newline_and_indent()
-        if self.node.is_natural:
+        if node.is_natural:
             output.write('NATURAL ')
-        output.write(('INNER', 'LEFT', 'FULL', 'RIGHT')[self.node.jointype])
+        output.write(('INNER', 'LEFT', 'FULL', 'RIGHT')[node.jointype])
         output.write(' JOIN ')
-        output.print_node(self.node.rarg)
-        if self.node.using_clause is not None:
+        output.print_node(node.rarg)
+        if node.using_clause is not None:
             output.write(' USING (')
-            output.print_list(self.node.using_clause)
+            output.print_list(node.using_clause)
             output.write(')')
-        elif self.node.quals is not None:
+        elif node.quals is not None:
             output.write(' ON ')
-            output.print_node(self.node.quals)
-        if self.node.alias is not None:
+            output.print_node(node.quals)
+        if node.alias is not None:
             output.write(' AS ')
-            output.print_node(self.node.alias)
+            output.print_node(node.alias)
 
 
 @node_printer(nodes.Literal)
-def literal(self, output):
-    name = self.node.str
+def literal(node, output):
+    name = node.str
     if name == '~~':
         name = 'LIKE'
     output.write(name)
 
 
 @node_printer(nodes.LockingClause)
-def locking_clause(self, output):
+def locking_clause(node, output):
     output.write((None,
                   'KEY SHARE',
                   'SHARE',
                   'NO KEY UPDATE',
-                  'UPDATE')[self.node.strength])
-    if self.node.locked_rels is not None:
+                  'UPDATE')[node.strength])
+    if node.locked_rels is not None:
         output.write(' OF ')
-        output.print_list(self.node.locked_rels)
-    if self.node.wait_policy:
+        output.print_list(node.locked_rels)
+    if node.wait_policy:
         output.write(' ')
-        output.write((None, 'SKIP LOCKED', 'NOWAIT')[self.node.wait_policy])
+        output.write((None, 'SKIP LOCKED', 'NOWAIT')[node.wait_policy])
 
 
 @node_printer(nodes.MultiAssignRef)
-def multi_assign_ref(self, output):
-    output.print_node(self.node.source)
+def multi_assign_ref(node, output):
+    output.print_node(node.source)
 
 
 @node_printer(nodes.Name)
-def name(self, output):
-    output.write(str(self.node))
+def name(node, output):
+    output.write(str(node))
 
 
 @node_printer(nodes.NullTest)
-def null_test(self, output):
-    output.print_node(self.node.arg)
+def null_test(node, output):
+    output.print_node(node.arg)
     output.write(' IS')
-    if self.node.type == nodes.NullTest.TYPE_IS_NOT_NULL:
+    if node.type == nodes.NullTest.TYPE_IS_NOT_NULL:
         output.write(' NOT')
     output.write(' NULL')
 
 
 @node_printer(nodes.RangeFunction)
-def range_function(self, output):
-    if self.node.lateral:
+def range_function(node, output):
+    if node.lateral:
         output.write('LATERAL ')
-    for fun, cdefs in self.node.functions:
+    for fun, cdefs in node.functions:
         output.print_node(fun)
         if cdefs is not None:
             output.write(' AS ')
             output.print_list(cdefs)
-    if self.node.alias is not None:
+    if node.alias is not None:
         output.write(' AS ')
-        output.print_node(self.node.alias)
-    if self.node.ordinality:
+        output.print_node(node.alias)
+    if node.ordinality:
         output.write(' WITH ORDINALITY')
 
 
 @node_printer(nodes.RangeSubselect)
-def range_subselect(self, output):
-    if self.node.lateral:
+def range_subselect(node, output):
+    if node.lateral:
         output.write('LATERAL ')
-    output.print_node(self.node.subquery)
-    if self.node.alias is not None:
+    output.print_node(node.subquery)
+    if node.alias is not None:
         output.write(' AS ')
-        output.print_node(self.node.alias)
+        output.print_node(node.alias)
 
 
 @node_printer(nodes.RangeVar)
-def range_var(self, output):
-    if self.node.inh_opt == nodes.RangeVar.INH_NO:
+def range_var(node, output):
+    if node.inh_opt == nodes.RangeVar.INH_NO:
         output.write('ONLY ')
-    if self.node.schemaname:
-        output.write(self.node.schemaname)
+    if node.schemaname:
+        output.write(node.schemaname)
         output.write('.')
-    output.write(self.node.relname)
-    alias = self.node.alias
+    output.write(node.relname)
+    alias = node.alias
     if alias:
         output.write(' AS ')
         output.print_node(alias)
 
 
 @node_printer(nodes.ResTarget)
-def res_target(self, output):
-    output.print_node(self.node.val)
-    name = self.node.name
+def res_target(node, output):
+    output.print_node(node.val)
+    name = node.name
     if name:
         output.write(' AS ')
         output.print_node(name)
 
 
 @node_printer(nodes.ResTargetUpdate)
-def res_target_update(self, output):
-    if isinstance(self.node.val, nodes.MultiAssignRef):
-        if self.node.val.colno == 1:
+def res_target_update(node, output):
+    if isinstance(node.val, nodes.MultiAssignRef):
+        if node.val.colno == 1:
             output.write('(  ')
             output.indent(-2)
-        output.print_node(self.node.name)
-        if self.node.val.colno == self.node.val.ncolumns:
+        output.print_node(node.name)
+        if node.val.colno == node.val.ncolumns:
             output.dedent()
             output.write(') = ')
-            output.print_node(self.node.val)
+            output.print_node(node.val)
     else:
-        output.print_node(self.node.name)
-        if self.node.indirection is not None:
-            output.print_list(self.node.indirection)
+        output.print_node(node.name)
+        if node.indirection is not None:
+            output.print_list(node.indirection)
         output.write(' = ')
-        output.print_node(self.node.val)
+        output.print_node(node.val)
 
 
 @node_printer(nodes.SelectStmt)
-def select_stmt(self, output):
+def select_stmt(node, output):
     with output.push_indent():
-        if self.node.with_clause is not None:
+        if node.with_clause is not None:
             output.write('WITH ')
-            output.print_node(self.node.with_clause)
+            output.print_node(node.with_clause)
             output.newline_and_indent()
 
-        if self.node.values_lists is not None:
+        if node.values_lists is not None:
             output.write('(VALUES (  ')
             with output.push_indent(-5):
                 first = True
-                for values in self.node.values_lists:
+                for values in node.values_lists:
                     if first:
                         first = False
                     else:
@@ -468,95 +467,95 @@ def select_stmt(self, output):
                     output.print_list(values)
                     output.write(')')
                 output.write(')')
-        elif self.node.target_list is None:
+        elif node.target_list is None:
             with output.push_indent():
-                output.print_node(self.node.larg)
+                output.print_node(node.larg)
                 output.newline_and_indent()
                 output.newline_and_indent()
-                output.write((None, 'UNION', 'INTERSECT', 'EXCEPT')[self.node.op])
-                if self.node.all:
+                output.write((None, 'UNION', 'INTERSECT', 'EXCEPT')[node.op])
+                if node.all:
                     output.write(' ALL')
                 output.newline_and_indent()
                 output.newline_and_indent()
-                output.print_node(self.node.rarg)
+                output.print_node(node.rarg)
         else:
             output.write('SELECT')
-            if self.node.distinct_clause:
+            if node.distinct_clause:
                 output.write(' DISTINCT')
-                if self.node.distinct_clause[0]:
+                if node.distinct_clause[0]:
                     output.write(' ON (')
-                    output.print_list(self.node.distinct_clause)
+                    output.print_list(node.distinct_clause)
                     output.write(')')
             output.write(' ')
-            output.print_list(self.node.target_list)
-            if self.node.from_clause is not None:
+            output.print_list(node.target_list)
+            if node.from_clause is not None:
                 output.newline_and_indent()
                 output.write('FROM ')
-                output.print_list(self.node.from_clause)
-            if self.node.where_clause is not None:
+                output.print_list(node.from_clause)
+            if node.where_clause is not None:
                 output.newline_and_indent()
                 output.write('WHERE ')
-                output.print_node(self.node.where_clause)
-            if self.node.group_clause is not None:
+                output.print_node(node.where_clause)
+            if node.group_clause is not None:
                 output.newline_and_indent()
                 output.write('GROUP BY ')
-                output.print_list(self.node.group_clause)
-            if self.node.having_clause is not None:
+                output.print_list(node.group_clause)
+            if node.having_clause is not None:
                 output.newline_and_indent()
                 output.write('HAVING ')
-                output.print_node(self.node.having_clause)
-            if self.node.window_clause is not None:
+                output.print_node(node.having_clause)
+            if node.window_clause is not None:
                 output.newline_and_indent()
                 output.write('WINDOW ')
-                output.print_list(self.node.window_clause)
-            if self.node.sort_clause is not None:
+                output.print_list(node.window_clause)
+            if node.sort_clause is not None:
                 output.newline_and_indent()
                 output.write('ORDER BY ')
-                output.print_list(self.node.sort_clause)
-            if self.node.limit_count is not None:
+                output.print_list(node.sort_clause)
+            if node.limit_count is not None:
                 output.newline_and_indent()
                 output.write('LIMIT ')
-                output.print_node(self.node.limit_count)
-            if self.node.limit_offset is not None:
+                output.print_node(node.limit_count)
+            if node.limit_offset is not None:
                 output.newline_and_indent()
                 output.write('OFFSET ')
-                output.print_node(self.node.limit_offset)
-            if self.node.locking_clause is not None:
+                output.print_node(node.limit_offset)
+            if node.locking_clause is not None:
                 output.newline_and_indent()
                 output.write('FOR ')
-                output.print_list(self.node.locking_clause)
+                output.print_list(node.locking_clause)
 
 
 @node_printer(nodes.SetToDefault)
-def set_to_default(self, output):
+def set_to_default(node, output):
     output.write('DEFAULT')
 
 
 @node_printer(nodes.SortBy)
-def sort_by(self, output):
-    output.print_node(self.node.node)
-    if self.node.dir == nodes.SortBy.DIR_ASC:
+def sort_by(node, output):
+    output.print_node(node.node)
+    if node.dir == nodes.SortBy.DIR_ASC:
         output.write(' ASC')
-    elif self.node.dir == nodes.SortBy.DIR_DESC:
+    elif node.dir == nodes.SortBy.DIR_DESC:
         output.write(' DESC')
-    elif self.node.dir == nodes.SortBy.DIR_USING:
+    elif node.dir == nodes.SortBy.DIR_USING:
         output.write(' USING ')
-        output.print_list(self.node.using)
-    if self.node.nulls:
+        output.print_list(node.using)
+    if node.nulls:
         output.write(' NULLS ')
-        output.write('FIRST' if self.node.nulls == nodes.SortBy.NULLS_FIRST else 'LAST')
+        output.write('FIRST' if node.nulls == nodes.SortBy.NULLS_FIRST else 'LAST')
 
 
 @node_printer(nodes.String)
-def string(self, output):
-    output.write("'%s'" % self.node)
+def string(node, output):
+    output.write("'%s'" % node)
 
 
 @node_printer(nodes.SubLink)
-def sub_link(self, output):
+def sub_link(node, output):
     output.write('(')
     with output.push_indent():
-        output.print_node(self.node.subselect)
+        output.print_node(node.subselect)
     output.write(')')
 
 
@@ -567,86 +566,86 @@ _common_values = {
 }
 
 @node_printer(nodes.TypeCast)
-def type_cast(self, output):
+def type_cast(node, output):
     # Replace common values
-    if isinstance(self.node.arg, nodes.TypeCast):
-        if isinstance(self.node.arg.arg, nodes.AConst):
+    if isinstance(node.arg, nodes.TypeCast):
+        if isinstance(node.arg.arg, nodes.AConst):
             value = '%s::%s::%s' % (
-                self.node.arg.arg.val,
-                ('.'.join(str(n) for n in self.node.arg.type_name.names)),
-                ('.'.join(str(n) for n in self.node.type_name.names)))
+                node.arg.arg.val,
+                ('.'.join(str(n) for n in node.arg.type_name.names)),
+                ('.'.join(str(n) for n in node.type_name.names)))
             if value in _common_values:
                 output.write(_common_values[value])
                 return
-    elif isinstance(self.node.arg, nodes.AConst):
+    elif isinstance(node.arg, nodes.AConst):
         value = '%s::%s' % (
-            self.node.arg.val,
-            ('.'.join(str(n) for n in self.node.type_name.names)))
+            node.arg.val,
+            ('.'.join(str(n) for n in node.type_name.names)))
         if value in _common_values:
             output.write(_common_values[value])
             return
-    output.print_node(self.node.arg)
+    output.print_node(node.arg)
     output.write('::')
-    output.print_node(self.node.type_name)
+    output.print_node(node.type_name)
 
 
 @node_printer(nodes.TypeName)
-def type_name(self, output):
-    names = self.node.names
+def type_name(node, output):
+    names = node.names
     output.write('.'.join(str(n) for n in names))
 
 
 @node_printer(nodes.UpdateStmt)
-def update_stmt(self, output):
+def update_stmt(node, output):
     with output.push_indent():
-        if self.node.with_clause is not None:
+        if node.with_clause is not None:
             output.write('WITH ')
-            output.print_node(self.node.with_clause)
+            output.print_node(node.with_clause)
             output.newline_and_indent()
 
         output.write('UPDATE ')
-        output.print_node(self.node.relation)
+        output.print_node(node.relation)
         output.newline_and_indent()
         output.write('   SET ')
-        output.print_list(self.node.target_list)
-        if self.node.from_clause is not None:
+        output.print_list(node.target_list)
+        if node.from_clause is not None:
             output.newline_and_indent()
             output.write('  FROM ')
-            output.print_list(self.node.from_clause)
-        if self.node.where_clause is not None:
+            output.print_list(node.from_clause)
+        if node.where_clause is not None:
             output.newline_and_indent()
             output.write(' WHERE ')
-            output.print_node(self.node.where_clause)
-        if self.node.returning_list is not None:
+            output.print_node(node.where_clause)
+        if node.returning_list is not None:
             output.newline_and_indent()
             output.write(' RETURNING ')
-            output.print_list(self.node.returning_list)
+            output.print_list(node.returning_list)
 
 
 @node_printer(nodes.WindowDef)
-def window_def(self, output):
-    empty = self.node.partition_clause is None and self.node.order_clause is None
-    if self.node.name is not None:
-        output.print_node(self.node.name)
+def window_def(node, output):
+    empty = node.partition_clause is None and node.order_clause is None
+    if node.name is not None:
+        output.print_node(node.name)
         if not empty:
             output.write(' AS ')
-    if not empty or self.node.name is None:
+    if not empty or node.name is None:
         output.write('(')
         with output.push_indent():
-            if self.node.partition_clause is not None:
+            if node.partition_clause is not None:
                 output.write('PARTITION BY ')
-                output.print_list(self.node.partition_clause)
-            if self.node.order_clause is not None:
-                if self.node.partition_clause is not None:
+                output.print_list(node.partition_clause)
+            if node.order_clause is not None:
+                if node.partition_clause is not None:
                     output.newline_and_indent()
                 output.write('ORDER BY ')
-                output.print_list(self.node.order_clause)
+                output.print_list(node.order_clause)
         output.write(')')
 
 
 @node_printer(nodes.WithClause)
-def with_clause(self, output):
+def with_clause(node, output):
     relindent = -3
-    if self.node.recursive:
+    if node.recursive:
         relindent -= output.write('RECURSIVE ')
-    output.print_list(self.node.ctes, relative_indent=relindent)
+    output.print_list(node.ctes, relative_indent=relindent)
