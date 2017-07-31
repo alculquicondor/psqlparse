@@ -107,3 +107,14 @@ class SubLink(Expr):
 
     def tables(self):
         return self.subselect.tables()
+
+
+class NullTest(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.nulltesttype = obj.get('nulltesttype')
+        self.location = obj.get('location')
+
+    def tables(self):
+        return set()
