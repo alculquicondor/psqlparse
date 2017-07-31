@@ -176,6 +176,24 @@ def a_expr(node, output):
     output.print_node(node.rexpr)
 
 
+@node_printer(nodes.AIndices)
+def a_indices(node, output):
+    output.write('[')
+    is_slice = node.is_slice
+    if is_slice is None:
+        # PG < 9.6
+        is_slice = node.lidx is not None and node.uidx is not None
+    if is_slice:
+        if node.lidx is not None:
+            output.print_node(node.lidx)
+        output.write(':')
+        if node.uidx is not None:
+            output.print_node(node.uidx)
+    else:
+        output.print_node(node.uidx)
+    output.write(']')
+
+
 @node_printer(nodes.Alias)
 def alias(node, output):
     output.print_node(node.aliasname)
