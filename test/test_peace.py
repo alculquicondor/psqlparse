@@ -212,6 +212,5 @@ def test_peace(sql):
         raise RuntimeError("Could not reparse %r" % indented)
     remove_location(indented_ast)
     assert orig_ast == indented_ast, "%r != %r" % (sql, indented)
-    # if 'DEFAULT' in indented:
-    #     print()
-    #     print(indented)
+    print()
+    print(indented)
