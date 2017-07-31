@@ -148,17 +148,6 @@ class PrettyPrinter(Serializer):
         self.write('\n')
         self.write(' ' * self.current_indent)
 
-    # def print_list(self, items, sep=', '):
-    #     suboutput = Serializer()
-    #     suboutput.print_list(items, sep)
-    #     result = suboutput.getvalue()
-    #     if self.column + len(result) < 80:
-    #         self.write(result)
-    #         self.newline_and_indent()
-    #     else:
-    #         with self.push_indent(-len(sep)):
-    #             self._print_list_items(items, sep)
-
 
 ##
 ## Specific Node printers
