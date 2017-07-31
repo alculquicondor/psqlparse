@@ -262,11 +262,11 @@ def delete_stmt(node, output):
             output.print_list(node.using_clause)
         if node.where_clause is not None:
             output.newline_and_indent()
-            output.write(' WHERE ')
+            output.write('WHERE ')
             output.print_node(node.where_clause)
         if node.returning_list is not None:
             output.newline_and_indent()
-            output.write(' RETURNING ')
+            output.write('RETURNING ')
             output.print_list(node.returning_list)
 
         if node.with_clause is not None:
@@ -612,19 +612,19 @@ def update_stmt(node, output):
         output.write('UPDATE ')
         output.print_node(node.relation)
         output.newline_and_indent()
-        output.write('   SET ')
+        output.write('SET ')
         output.print_list(node.target_list)
         if node.from_clause is not None:
             output.newline_and_indent()
-            output.write('  FROM ')
+            output.write('FROM ')
             output.print_list(node.from_clause)
         if node.where_clause is not None:
             output.newline_and_indent()
-            output.write(' WHERE ')
+            output.write('WHERE ')
             output.print_node(node.where_clause)
         if node.returning_list is not None:
             output.newline_and_indent()
-            output.write(' RETURNING ')
+            output.write('RETURNING ')
             output.print_list(node.returning_list)
 
         if node.with_clause is not None:
