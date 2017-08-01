@@ -216,7 +216,28 @@ class PrettyPrinter(Serializer):
 
 
 def format(sql, **options):
+    """Reformat given `sql` into a pretty representation.
+
+    :param sql: either the source SQL in textual form, or a syntax tree produced by
+                :func:`~.parser.parse`
+    :param \*\*options: any keyword argument accepted by :class:`PrettyPrinter`
+    :returns: a string with the equivalent SQL obtained by serializing the syntax tree
+    """
+
     printer = PrettyPrinter(**options)
+    return printer(sql)
+
+
+def serialize(sql, **options):
+    """Serialize given `sql` into a pretty representation.
+
+    :param sql: either the source SQL in textual form, or a syntax tree produced by
+                :func:`~.parser.parse`
+    :param \*\*options: any keyword argument accepted by :class:`Serializer`
+    :returns: a string with the equivalent SQL obtained by serializing the syntax tree
+    """
+
+    printer = Serializer(**options)
     return printer(sql)
 
 

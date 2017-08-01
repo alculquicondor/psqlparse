@@ -24,18 +24,29 @@ statements = psqlparse.parse('SELECT * from mytable')
 used_tables = statements[0].tables()  # ['my_table']
 ```
 
-To reformat a statement:
+The *parsetree* returned by ``parse()`` can be serialized back into a raw SQL:
 
 ```python
-import psqlparse
-print(sqlparse.format('SELECT a.id, b.value'
-                      ' from mytable a join other b using (id)'
-                      ' where a.id > 0 and a.id < 10'))
+print(psqlparse.serialize(statements))
 ```
 
-produces:
+that emits:
 
+```sql
+SELECT * FROM mytable
 ```
+
+or you can obtain its pretty representation::
+
+```python
+print(psqlparse.format('SELECT a.id, b.value'
+                       ' from mytable a join other b using (id)'
+                       ' where a.id > 0 and a.id < 10'))
+```
+
+that produces:
+
+```sql
 SELECT a.id
      , b.value
 FROM mytable AS a
