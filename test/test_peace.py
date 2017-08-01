@@ -8,7 +8,7 @@
 
 import pytest
 
-from psqlparse import format, parse_dict
+from psqlparse import format, parse_dict, serialize
 
 
 def remove_location(d):
@@ -203,6 +203,15 @@ INSERT INTO employees_log SELECT *, current_timestamp FROM upd
 def test_peace(sql):
     orig_ast = parse_dict(sql)
     remove_location(orig_ast)
+
+    serialized = serialize(sql)
+    try:
+        serialized_ast = parse_dict(serialized)
+    except:
+        raise RuntimeError("Could not reparse %r" % serialized)
+    remove_location(serialized_ast)
+    assert orig_ast == serialized_ast, "%r != %r" % (sql, serialized)
+
     indented = format(sql)
     try:
         indented_ast = parse_dict(indented)
@@ -210,5 +219,6 @@ def test_peace(sql):
         raise RuntimeError("Could not reparse %r" % indented)
     remove_location(indented_ast)
     assert orig_ast == indented_ast, "%r != %r" % (sql, indented)
+
     print()
     print(indented)

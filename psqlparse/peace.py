@@ -123,23 +123,16 @@ class Serializer(StringIO, object):
             self._print_list_items(items, sep, standalone_items)
 
     def print_expression(self, items, operator):
-        "Emit a list of `items` between parens, using `operator` as separator."
+        """Emit a list of `items` between parens, using `operator` as separator.
+
+        :param items: a sequence of expression operands
+        :param operator: the operator between items
+        """
 
         self.expression_level += 1
         if self.expression_level > 1:
-            if self.align_expression_operands:
-                oplen = len(operator)
-                self.write('(' + ' '*oplen)
-                indent = -oplen
-            else:
-                self.write('(')
-                indent = 0
-        else:
-            indent = -len(operator)
-
-        with self.push_indent(indent):
-            self._print_list_items(items, operator)
-
+            self.write('(')
+        self._print_list_items(items, operator)
         self.expression_level -= 1
         if self.expression_level > 0:
             self.write(')')
@@ -213,6 +206,35 @@ class PrettyPrinter(Serializer):
 
         self.write('\n')
         self.write(' ' * self.current_indent)
+
+    def print_expression(self, items, operator):
+        """Emit a list of `items` between parens, using `operator` as separator.
+
+        :param items: a sequence of expression operands
+        :param operator: the operator between items
+
+        If `align_expression_operands` is ``True`` then the operands will be vertically
+        aligned.
+        """
+
+        self.expression_level += 1
+        if self.expression_level > 1:
+            if self.align_expression_operands:
+                oplen = len(operator)
+                self.write('(' + ' '*oplen)
+                indent = -oplen
+            else:
+                self.write('(')
+                indent = 0
+        else:
+            indent = -len(operator)
+
+        with self.push_indent(indent):
+            self._print_list_items(items, operator)
+
+        self.expression_level -= 1
+        if self.expression_level > 0:
+            self.write(')')
 
 
 def format(sql, **options):
