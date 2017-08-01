@@ -1,8 +1,17 @@
 from .utils import build_from_item
 from .nodes import Node
+from .value import Name
+
+
+# See https://github.com/postgres/postgres/blob/master/src/include/nodes/primnodes.h
 
 
 class RangeVar(Node):
+
+    # NB: these changed in PG 10!
+    INH_NO = 0                  #  Do NOT scan child tables
+    INH_YES = 1                 #  DO scan child tables
+    INH_DEFAULT = 2             #  Use current SQL_inheritance option
 
     def __init__(self, obj):
         """
@@ -40,12 +49,17 @@ class JoinExpr(Node):
     For SQL JOIN expressions
     """
 
+    JOIN_INNER = 0              #  matching tuple pairs only
+    JOIN_LEFT = 1               #  pairs + unmatched LHS tuples
+    JOIN_FULL = 2               #  pairs + unmatched LHS + unmatched RHS
+    JOIN_RIGHT = 3              #  pairs + unmatched RHS tuples
+
     def __init__(self, obj):
         self.jointype = obj.get('jointype')
         self.is_natural = obj.get('isNatural')
         self.larg = build_from_item(obj, 'larg')
         self.rarg = build_from_item(obj, 'rarg')
-        self.using_clause = build_from_item(obj, 'usingClause')
+        self.using_clause = build_from_item(obj, 'usingClause', 'Literal')
         self.quals = build_from_item(obj, 'quals')
         self.alias = build_from_item(obj, 'alias')
 
@@ -62,8 +76,8 @@ class JoinExpr(Node):
 class Alias(Node):
 
     def __init__(self, obj):
-        self.aliasname = obj.get('aliasname')
-        self.colnames = build_from_item(obj, 'colnames')
+        self.aliasname = Name.from_string(obj.get('aliasname'))
+        self.colnames = build_from_item(obj, 'colnames', 'Name')
 
     def tables(self):
         return set()
@@ -107,3 +121,9 @@ class SubLink(Expr):
 
     def tables(self):
         return self.subselect.tables()
+
+
+class SetToDefault(Node):
+
+    def __init__(self, obj):
+        self.location = obj.get('location')

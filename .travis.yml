@@ -7,4 +7,4 @@ install:
     - USE_CYTHON=1 python setup.py build_ext --inplace -f install
 # actual test run can be added later
 script:
-    - python -m unittest discover --verbose
+    - py.test -v ./test

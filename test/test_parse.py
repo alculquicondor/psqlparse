@@ -84,7 +84,7 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsNone(stmt.with_clause.recursive)
 
         with_query = stmt.with_clause.ctes[0]
-        self.assertEqual(with_query.ctename, 'fake_table')
+        self.assertEqual(str(with_query.ctename), 'fake_table')
         self.assertIsInstance(with_query.ctequery, nodes.SelectStmt)
 
     def test_select_subquery(self):
@@ -96,14 +96,14 @@ class SelectQueriesTest(unittest.TestCase):
         sub_query = stmt.from_clause[0]
         self.assertIsInstance(sub_query, nodes.RangeSubselect)
         self.assertIsInstance(sub_query.alias, nodes.Alias)
-        self.assertEqual(sub_query.alias.aliasname, 'other')
+        self.assertEqual(str(sub_query.alias.aliasname), 'other')
         self.assertIsInstance(sub_query.subquery, nodes.SelectStmt)
 
         self.assertEqual(len(stmt.target_list), 1)
 
     def test_select_from_values(self):
         query = ("SELECT * FROM "
-                 "(VALUES (1, 'one'), (2, 'two')) AS t (num, letter)")
+                 "(VALUES (1, 'one'), (2, 'two')) AS \"T\" (\"Num\", letter)")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
 
@@ -112,8 +112,9 @@ class SelectQueriesTest(unittest.TestCase):
 
         alias = stmt.from_clause[0].alias
         self.assertIsInstance(alias, nodes.Alias)
-        self.assertEqual(alias.aliasname, 't')
-        self.assertEqual(['num', 'letter'], [str(v) for v in alias.colnames])
+        self.assertEqual(alias.aliasname.val, 'T')
+        self.assertEqual(str(alias.aliasname), '"T"')
+        self.assertEqual(['"Num"', 'letter'], [str(v) for v in alias.colnames])
 
         subquery = stmt.from_clause[0].subquery
         self.assertIsInstance(subquery, nodes.SelectStmt)
@@ -161,8 +162,8 @@ class InsertQueriesTest(unittest.TestCase):
         self.assertEqual(stmt.relation.relname, 'my_table')
 
         self.assertEqual(len(stmt.cols), 2)
-        self.assertEqual(stmt.cols[0].name, 'id')
-        self.assertEqual(stmt.cols[1].name, 'name')
+        self.assertEqual(str(stmt.cols[0].name), 'id')
+        self.assertEqual(str(stmt.cols[1].name), 'name')
 
         self.assertIsInstance(stmt.select_stmt, nodes.SelectStmt)
         self.assertEqual(len(stmt.select_stmt.values_lists), 1)

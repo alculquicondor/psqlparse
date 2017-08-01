@@ -35,6 +35,26 @@ class String(Value):
         return self.str
 
 
+class Literal(String):
+    "A literal symbol, used for example for expression's operators."
+
+
+class Name(String):
+    "A column name, that could need to be double quoted in its textual representation."
+
+    @classmethod
+    def from_string(cls, str):
+        if str is None:
+            return None
+        return cls(dict(str=str))
+
+    def __str__(self):
+        v = self.str
+        if not v.islower():
+            v = '"%s"' % v
+        return v
+
+
 class Float(Value):
 
     def __init__(self, obj):
@@ -47,6 +67,3 @@ class Float(Value):
     @property
     def val(self):
         return self.fval
-
-
-
