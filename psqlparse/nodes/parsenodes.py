@@ -298,6 +298,7 @@ class TypeName(Node):
 
     def __init__(self, obj):
         self.names = build_from_item(obj, 'names')
+        self.type_oid = obj.get('typeOid')
         self.setof = obj.get('setof')
         self.pct_type = obj.get('pct_type')
         self.typmods = build_from_item(obj, 'typmods')
@@ -335,29 +336,3 @@ class LockingClause(Node):
         self.locked_rels = build_from_item(obj, 'lockedRels')
         self.strength = build_from_item(obj, 'strength')
         self.wait_policy = obj.get('waitPolicy')
-        self.location = obj.get('location')
-
-
-class CaseExpr(Node):
-
-    def __init__(self, obj):
-        self.arg = build_from_item(obj, 'arg')
-        self.args = build_from_item(obj, 'args')
-        self.defresult = build_from_item(obj, 'defresult')
-        self.location = obj.get('location')
-
-
-class CaseWhen(Node):
-
-    def __init__(self, obj):
-        self.expr = build_from_item(obj, 'expr')
-        self.result = build_from_item(obj, 'result')
-        self.location = obj.get('location')
-
-
-class NullTest(Node):
-
-    def __init__(self, obj):
-        self.arg = build_from_item(obj, 'arg')
-        self.nulltesttype = obj.get('nulltesttype')
-        self.location = obj.get('location')

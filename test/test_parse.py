@@ -136,7 +136,7 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(target.val.args[0].result, nodes.AConst)
         self.assertIsInstance(target.val.defresult, nodes.AConst)
 
-        query = "select case a.value when 0 then '1' else '2' end from sometable a"
+        query = "SELECT CASE a.value WHEN 0 THEN '1' ELSE '2' END FROM sometable a"
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(len(stmt.target_list), 1)
@@ -145,7 +145,7 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(target.val.arg, nodes.ColumnRef)
 
     def test_select_union(self):
-        query = "select * FROM table_one UNION select * FROM table_two"
+        query = "SELECT * FROM table_one UNION select * FROM table_two"
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
 
@@ -247,13 +247,13 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(stmt.locking_clause[0].wait_policy, 2)
 
     def test_select_is_null(self):
-        query = "SELECT m.* FROM mytable m WHERE m.foo is null"
+        query = "SELECT m.* FROM mytable m WHERE m.foo IS NULL"
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertIsInstance(stmt.where_clause, nodes.NullTest)
         self.assertEqual(stmt.where_clause.nulltesttype, 0)
 
-        query = "SELECT m.* FROM mytable m WHERE m.foo is not null"
+        query = "SELECT m.* FROM mytable m WHERE m.foo IS NOT NULL"
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertIsInstance(stmt.where_clause, nodes.NullTest)

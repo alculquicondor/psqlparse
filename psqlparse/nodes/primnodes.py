@@ -112,4 +112,35 @@ class SubLink(Expr):
 class SetToDefault(Node):
 
     def __init__(self, obj):
+        self.type_id = obj.get('typeId')
+        self.type_mod = obj.get('typeMod')
+        self.collation = obj.get('collation')
+        self.location = obj.get('location')
+
+
+class CaseExpr(Node):
+
+    def __init__(self, obj):
+        self.casetype = obj.get('casetype')
+        self.casecollid = obj.get('casecollid')
+        self.arg = build_from_item(obj, 'arg')
+        self.args = build_from_item(obj, 'args')
+        self.defresult = build_from_item(obj, 'defresult')
+        self.location = obj.get('location')
+
+
+class CaseWhen(Node):
+
+    def __init__(self, obj):
+        self.expr = build_from_item(obj, 'expr')
+        self.result = build_from_item(obj, 'result')
+        self.location = obj.get('location')
+
+
+class NullTest(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.nulltesttype = obj.get('nulltesttype')
+        self.argisrow = obj.get('argisrow')
         self.location = obj.get('location')
