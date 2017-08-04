@@ -272,6 +272,21 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(len(second.functions[0]), 2)
         self.assertIsInstance(second.functions[0][0], nodes.FuncCall)
 
+    def test_select_array(self):
+        query = "SELECT * FROM unnest(ARRAY['a','b','c','d','e','f']) WITH ORDINALITY"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.from_clause), 1)
+        outer = stmt.from_clause[0]
+        self.assertIsInstance(outer, nodes.RangeFunction)
+        self.assertTrue(outer.ordinality)
+        self.assertEqual(len(outer.functions), 1)
+        inner = outer.functions[0][0]
+        self.assertIsInstance(inner, nodes.FuncCall)
+        self.assertEqual(len(inner.args), 1)
+        self.assertIsInstance(inner.args[0], nodes.AArrayExpr)
+        self.assertEqual(len(inner.args[0].elements), 6)
+
 
 class InsertQueriesTest(unittest.TestCase):
 

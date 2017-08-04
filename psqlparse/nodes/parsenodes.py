@@ -347,3 +347,10 @@ class RangeFunction(Node):
         self.functions = build_from_item(obj, 'functions')
         self.alias = build_from_item(obj, 'alias')
         self.coldeflist = build_from_item(obj, 'coldeflist')
+
+
+class AArrayExpr(Node):
+
+    def __init__(self, obj):
+        self.elements = build_from_item(obj, 'elements')
+        self.location = obj.get('location')
