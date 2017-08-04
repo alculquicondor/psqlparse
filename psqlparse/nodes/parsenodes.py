@@ -354,3 +354,9 @@ class AArrayExpr(Node):
     def __init__(self, obj):
         self.elements = build_from_item(obj, 'elements')
         self.location = obj.get('location')
+
+
+class AIndices(Node):
+    def __init__(self, obj):
+        self.lidx = build_from_item(obj, 'lidx')
+        self.uidx = build_from_item(obj, 'uidx')

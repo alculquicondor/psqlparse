@@ -343,6 +343,22 @@ class UpdateQueriesTest(unittest.TestCase):
         self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
         self.assertIsInstance(stmt.target_list[0].val, nodes.SetToDefault)
 
+    def test_update_array(self):
+        query = ("UPDATE tictactoe "
+                 "SET board[1:3][1:3] = '{{" "," "," "},{" "," "," "},{" "," "," "}}' "
+                 "WHERE game = 1")
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.UpdateStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
+        indirection = stmt.target_list[0].indirection
+        self.assertEqual(len(indirection), 2)
+        self.assertIsInstance(indirection[0], nodes.AIndices)
+        self.assertIsInstance(indirection[1], nodes.AIndices)
+        self.assertIsInstance(indirection[0].lidx, nodes.AConst)
+        self.assertIsInstance(indirection[0].uidx, nodes.AConst)
+
 
 class MultipleQueriesTest(unittest.TestCase):
 
