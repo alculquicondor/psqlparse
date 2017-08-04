@@ -314,3 +314,16 @@ class SortBy(Node):
         self.sortby_nulls = obj.get('sortby_nulls')
         self.use_op = build_from_item(obj, 'useOp')
         self.location = obj.get('location')
+
+
+class WindowDef(Node):
+
+    def __init__(self, obj):
+        self.name = obj.get('name')
+        self.refname = obj.get('refname')
+        self.partition_clause = build_from_item(obj, 'partitionClause')
+        self.order_clause = build_from_item(obj, 'orderClause')
+        self.frame_options = obj.get('frameOptions')
+        self.start_offset = build_from_item(obj, 'startOffset')
+        self.end_offset = build_from_item(obj, 'endOffset')
+        self.location = obj.get('location')

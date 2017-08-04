@@ -179,6 +179,39 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(stmt.sort_clause[0].use_op[0], nodes.String)
         self.assertEqual(stmt.sort_clause[0].use_op[0].val, '@>')
 
+    def test_select_window(self):
+        query = "SELECT salary, sum(salary) OVER () FROM empsalary"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.FuncCall)
+        self.assertIsInstance(target.val.over, nodes.WindowDef)
+        self.assertIsNone(target.val.over.order_clause)
+        self.assertIsNone(target.val.over.partition_clause)
+
+        query = "SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.FuncCall)
+        self.assertIsInstance(target.val.over, nodes.WindowDef)
+        self.assertEqual(len(target.val.over.order_clause), 1)
+        self.assertIsInstance(target.val.over.order_clause[0], nodes.SortBy)
+        self.assertIsNone(target.val.over.partition_clause)
+
+        query = "SELECT salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.FuncCall)
+        self.assertIsInstance(target.val.over, nodes.WindowDef)
+        self.assertIsNone(target.val.over.order_clause)
+        self.assertEqual(len(target.val.over.partition_clause), 1)
+        self.assertIsInstance(target.val.over.partition_clause[0], nodes.ColumnRef)
+
 
 class InsertQueriesTest(unittest.TestCase):
 
