@@ -360,3 +360,11 @@ class AIndices(Node):
     def __init__(self, obj):
         self.lidx = build_from_item(obj, 'lidx')
         self.uidx = build_from_item(obj, 'uidx')
+
+
+class MultiAssignRef(Node):
+
+    def __init__(self, obj):
+        self.source = build_from_item(obj, 'source')
+        self.colno = obj.get('colno')
+        self.ncolumns = obj.get('ncolumns')

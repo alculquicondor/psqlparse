@@ -359,6 +359,25 @@ class UpdateQueriesTest(unittest.TestCase):
         self.assertIsInstance(indirection[0].lidx, nodes.AConst)
         self.assertIsInstance(indirection[0].uidx, nodes.AConst)
 
+    def test_update_multi_assign(self):
+        query = ("UPDATE accounts "
+                 "SET (contact_first_name, contact_last_name) "
+                 "= (SELECT first_name, last_name FROM salesmen "
+                 "WHERE salesmen.id = accounts.sales_id)")
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.UpdateStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
+        first = stmt.target_list[0]
+        self.assertIsInstance(first, nodes.ResTarget)
+        self.assertEqual(first.name, 'contact_first_name')
+        self.assertIsInstance(first.val, nodes.MultiAssignRef)
+        self.assertEqual(first.val.ncolumns, 2)
+        self.assertEqual(first.val.colno, 1)
+        self.assertIsInstance(first.val.source, nodes.SubLink)
+        self.assertIsInstance(first.val.source.subselect, nodes.SelectStmt)
+
 
 class MultipleQueriesTest(unittest.TestCase):
 
