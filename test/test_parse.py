@@ -148,6 +148,19 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(str(func_call.args[0].fields[0]), 'geo1')
         self.assertEqual(str(func_call.args[1].fields[0]), 'geo2')
 
+    def test_select_type_cast(self):
+        query = "SELECT 'accbf276-705b-11e7-b8e4-0242ac120002'::UUID"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        target = stmt.target_list[0]
+        self.assertIsInstance(target, nodes.ResTarget)
+        self.assertIsInstance(target.val, nodes.TypeCast)
+        self.assertIsInstance(target.val.arg, nodes.AConst)
+        self.assertEqual(target.val.arg.val.val, 'accbf276-705b-11e7-b8e4-0242ac120002')
+        self.assertIsInstance(target.val.type_name, nodes.TypeName)
+        self.assertEqual(target.val.type_name.names[0].val, "uuid")
+
 
 class InsertQueriesTest(unittest.TestCase):
 
