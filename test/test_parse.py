@@ -161,6 +161,24 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(target.val.type_name, nodes.TypeName)
         self.assertEqual(target.val.type_name.names[0].val, "uuid")
 
+    def test_select_order_by(self):
+        query = "SELECT * FROM my_table ORDER BY field DESC NULLS FIRST"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.sort_clause), 1)
+        self.assertIsInstance(stmt.sort_clause[0], nodes.SortBy)
+        self.assertIsInstance(stmt.sort_clause[0].node, nodes.ColumnRef)
+        self.assertEqual(stmt.sort_clause[0].sortby_dir, 2)
+        self.assertEqual(stmt.sort_clause[0].sortby_nulls, 1)
+
+        query = "SELECT * FROM my_table ORDER BY field USING @>"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt.sort_clause[0], nodes.SortBy)
+        self.assertIsInstance(stmt.sort_clause[0].node, nodes.ColumnRef)
+        self.assertEqual(len(stmt.sort_clause[0].use_op), 1)
+        self.assertIsInstance(stmt.sort_clause[0].use_op[0], nodes.String)
+        self.assertEqual(stmt.sort_clause[0].use_op[0].val, '@>')
+
 
 class InsertQueriesTest(unittest.TestCase):
 
