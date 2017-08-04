@@ -126,8 +126,23 @@ class SelectQueriesTest(unittest.TestCase):
                  " ELSE 'other' END FROM test")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
-
         self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.CaseExpr)
+        self.assertIsNone(target.val.arg)
+        self.assertEqual(len(target.val.args), 2)
+        self.assertIsInstance(target.val.args[0], nodes.CaseWhen)
+        self.assertIsInstance(target.val.args[0].expr, nodes.AExpr)
+        self.assertIsInstance(target.val.args[0].result, nodes.AConst)
+        self.assertIsInstance(target.val.defresult, nodes.AConst)
+
+        query = "select case a.value when 0 then '1' else '2' end from sometable a"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        target = stmt.target_list[0]
+        self.assertIsInstance(target.val, nodes.CaseExpr)
+        self.assertIsInstance(target.val.arg, nodes.ColumnRef)
 
     def test_select_union(self):
         query = "select * FROM table_one UNION select * FROM table_two"

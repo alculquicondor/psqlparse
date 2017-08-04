@@ -336,3 +336,20 @@ class LockingClause(Node):
         self.strength = build_from_item(obj, 'strength')
         self.wait_policy = obj.get('waitPolicy')
         self.location = obj.get('location')
+
+
+class CaseExpr(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.args = build_from_item(obj, 'args')
+        self.defresult = build_from_item(obj, 'defresult')
+        self.location = obj.get('location')
+
+
+class CaseWhen(Node):
+
+    def __init__(self, obj):
+        self.expr = build_from_item(obj, 'expr')
+        self.result = build_from_item(obj, 'result')
+        self.location = obj.get('location')
