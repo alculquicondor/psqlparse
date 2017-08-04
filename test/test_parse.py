@@ -259,6 +259,20 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(stmt.where_clause, nodes.NullTest)
         self.assertEqual(stmt.where_clause.nulltesttype, 1)
 
+    def test_select_range_function(self):
+        query = ("SELECT m.name AS mname, pname "
+                 "FROM manufacturers m, LATERAL get_product_names(m.id) pname")
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.from_clause), 2)
+        second = stmt.from_clause[1]
+        self.assertIsInstance(second, nodes.RangeFunction)
+        self.assertTrue(second.lateral)
+        self.assertEqual(len(second.functions), 1)
+        self.assertEqual(len(second.functions[0]), 2)
+        self.assertIsInstance(second.functions[0][0], nodes.FuncCall)
+
+
 class InsertQueriesTest(unittest.TestCase):
 
     def test_insert_no_where(self):

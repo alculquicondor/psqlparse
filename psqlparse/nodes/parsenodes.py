@@ -336,3 +336,14 @@ class LockingClause(Node):
         self.locked_rels = build_from_item(obj, 'lockedRels')
         self.strength = build_from_item(obj, 'strength')
         self.wait_policy = obj.get('waitPolicy')
+
+
+class RangeFunction(Node):
+
+    def __init__(self, obj):
+        self.lateral = obj.get('lateral')
+        self.ordinality = obj.get('ordinality')
+        self.is_rowsfrom = obj.get('is_rowsfrom')
+        self.functions = build_from_item(obj, 'functions')
+        self.alias = build_from_item(obj, 'alias')
+        self.coldeflist = build_from_item(obj, 'coldeflist')
