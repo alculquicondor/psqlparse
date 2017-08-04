@@ -353,3 +353,11 @@ class CaseWhen(Node):
         self.expr = build_from_item(obj, 'expr')
         self.result = build_from_item(obj, 'result')
         self.location = obj.get('location')
+
+
+class NullTest(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.nulltesttype = obj.get('nulltesttype')
+        self.location = obj.get('location')

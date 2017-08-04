@@ -246,6 +246,18 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(stmt.locking_clause[0].locked_rels[0].relname, 'm')
         self.assertEqual(stmt.locking_clause[0].wait_policy, 2)
 
+    def test_select_is_null(self):
+        query = "SELECT m.* FROM mytable m WHERE m.foo is null"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertIsInstance(stmt.where_clause, nodes.NullTest)
+        self.assertEqual(stmt.where_clause.nulltesttype, 0)
+
+        query = "SELECT m.* FROM mytable m WHERE m.foo is not null"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertIsInstance(stmt.where_clause, nodes.NullTest)
+        self.assertEqual(stmt.where_clause.nulltesttype, 1)
 
 class InsertQueriesTest(unittest.TestCase):
 
