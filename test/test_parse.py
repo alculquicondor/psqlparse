@@ -193,6 +193,18 @@ class InsertQueriesTest(unittest.TestCase):
         self.assertEqual(str(stmt.returning_list[1].val.fields[0]), 'date')
 
 
+class UpdateQueriesTest(unittest.TestCase):
+
+    def test_update_to_default(self):
+        query = "UPDATE my_table SET the_value = DEFAULT"
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.UpdateStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
+        self.assertIsInstance(stmt.target_list[0].val, nodes.SetToDefault)
+
+
 class MultipleQueriesTest(unittest.TestCase):
 
     def test_has_insert_and_select_statement(self):

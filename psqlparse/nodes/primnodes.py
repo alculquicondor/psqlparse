@@ -107,3 +107,9 @@ class SubLink(Expr):
 
     def tables(self):
         return self.subselect.tables()
+
+
+class SetToDefault(Node):
+
+    def __init__(self, obj):
+        self.location = obj.get('location')
