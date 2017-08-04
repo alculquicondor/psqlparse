@@ -212,6 +212,25 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(len(target.val.over.partition_clause), 1)
         self.assertIsInstance(target.val.over.partition_clause[0], nodes.ColumnRef)
 
+    def test_select_locks(self):
+        query = "SELECT m.* FROM mytable m FOR UPDATE"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.locking_clause), 1)
+        self.assertIsInstance(stmt.locking_clause[0], nodes.LockingClause)
+        self.assertEqual(stmt.locking_clause[0].strength, 4)
+
+        query = "SELECT m.* FROM mytable m FOR SHARE of m nowait"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.locking_clause), 1)
+        self.assertIsInstance(stmt.locking_clause[0], nodes.LockingClause)
+        self.assertEqual(stmt.locking_clause[0].strength, 2)
+        self.assertEqual(len(stmt.locking_clause[0].locked_rels), 1)
+        self.assertIsInstance(stmt.locking_clause[0].locked_rels[0], nodes.RangeVar)
+        self.assertEqual(stmt.locking_clause[0].locked_rels[0].relname, 'm')
+        self.assertEqual(stmt.locking_clause[0].wait_policy, 2)
+
 
 class InsertQueriesTest(unittest.TestCase):
 

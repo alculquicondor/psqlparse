@@ -327,3 +327,12 @@ class WindowDef(Node):
         self.start_offset = build_from_item(obj, 'startOffset')
         self.end_offset = build_from_item(obj, 'endOffset')
         self.location = obj.get('location')
+
+
+class LockingClause(Node):
+
+    def __init__(self, obj):
+        self.locked_rels = build_from_item(obj, 'lockedRels')
+        self.strength = build_from_item(obj, 'strength')
+        self.wait_policy = obj.get('waitPolicy')
+        self.location = obj.get('location')
