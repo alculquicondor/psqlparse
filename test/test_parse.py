@@ -126,11 +126,26 @@ class SelectQueriesTest(unittest.TestCase):
                  " ELSE 'other' END FROM test")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
-
         self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.CaseExpr)
+        self.assertIsNone(target.val.arg)
+        self.assertEqual(len(target.val.args), 2)
+        self.assertIsInstance(target.val.args[0], nodes.CaseWhen)
+        self.assertIsInstance(target.val.args[0].expr, nodes.AExpr)
+        self.assertIsInstance(target.val.args[0].result, nodes.AConst)
+        self.assertIsInstance(target.val.defresult, nodes.AConst)
+
+        query = "SELECT CASE a.value WHEN 0 THEN '1' ELSE '2' END FROM sometable a"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        target = stmt.target_list[0]
+        self.assertIsInstance(target.val, nodes.CaseExpr)
+        self.assertIsInstance(target.val.arg, nodes.ColumnRef)
 
     def test_select_union(self):
-        query = "select * FROM table_one UNION select * FROM table_two"
+        query = "SELECT * FROM table_one UNION select * FROM table_two"
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
 
@@ -147,6 +162,130 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertEqual(str(func_call.funcname[0]), 'st_intersects')
         self.assertEqual(str(func_call.args[0].fields[0]), 'geo1')
         self.assertEqual(str(func_call.args[1].fields[0]), 'geo2')
+
+    def test_select_type_cast(self):
+        query = "SELECT 'accbf276-705b-11e7-b8e4-0242ac120002'::UUID"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        target = stmt.target_list[0]
+        self.assertIsInstance(target, nodes.ResTarget)
+        self.assertIsInstance(target.val, nodes.TypeCast)
+        self.assertIsInstance(target.val.arg, nodes.AConst)
+        self.assertEqual(target.val.arg.val.val, 'accbf276-705b-11e7-b8e4-0242ac120002')
+        self.assertIsInstance(target.val.type_name, nodes.TypeName)
+        self.assertEqual(target.val.type_name.names[0].val, "uuid")
+
+    def test_select_order_by(self):
+        query = "SELECT * FROM my_table ORDER BY field DESC NULLS FIRST"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.sort_clause), 1)
+        self.assertIsInstance(stmt.sort_clause[0], nodes.SortBy)
+        self.assertIsInstance(stmt.sort_clause[0].node, nodes.ColumnRef)
+        self.assertEqual(stmt.sort_clause[0].sortby_dir, 2)
+        self.assertEqual(stmt.sort_clause[0].sortby_nulls, 1)
+
+        query = "SELECT * FROM my_table ORDER BY field USING @>"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt.sort_clause[0], nodes.SortBy)
+        self.assertIsInstance(stmt.sort_clause[0].node, nodes.ColumnRef)
+        self.assertEqual(len(stmt.sort_clause[0].use_op), 1)
+        self.assertIsInstance(stmt.sort_clause[0].use_op[0], nodes.String)
+        self.assertEqual(stmt.sort_clause[0].use_op[0].val, '@>')
+
+    def test_select_window(self):
+        query = "SELECT salary, sum(salary) OVER () FROM empsalary"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.FuncCall)
+        self.assertIsInstance(target.val.over, nodes.WindowDef)
+        self.assertIsNone(target.val.over.order_clause)
+        self.assertIsNone(target.val.over.partition_clause)
+
+        query = "SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.FuncCall)
+        self.assertIsInstance(target.val.over, nodes.WindowDef)
+        self.assertEqual(len(target.val.over.order_clause), 1)
+        self.assertIsInstance(target.val.over.order_clause[0], nodes.SortBy)
+        self.assertIsNone(target.val.over.partition_clause)
+
+        query = "SELECT salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        target = stmt.target_list[1]
+        self.assertIsInstance(target.val, nodes.FuncCall)
+        self.assertIsInstance(target.val.over, nodes.WindowDef)
+        self.assertIsNone(target.val.over.order_clause)
+        self.assertEqual(len(target.val.over.partition_clause), 1)
+        self.assertIsInstance(target.val.over.partition_clause[0], nodes.ColumnRef)
+
+    def test_select_locks(self):
+        query = "SELECT m.* FROM mytable m FOR UPDATE"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.locking_clause), 1)
+        self.assertIsInstance(stmt.locking_clause[0], nodes.LockingClause)
+        self.assertEqual(stmt.locking_clause[0].strength, 4)
+
+        query = "SELECT m.* FROM mytable m FOR SHARE of m nowait"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.locking_clause), 1)
+        self.assertIsInstance(stmt.locking_clause[0], nodes.LockingClause)
+        self.assertEqual(stmt.locking_clause[0].strength, 2)
+        self.assertEqual(len(stmt.locking_clause[0].locked_rels), 1)
+        self.assertIsInstance(stmt.locking_clause[0].locked_rels[0], nodes.RangeVar)
+        self.assertEqual(stmt.locking_clause[0].locked_rels[0].relname, 'm')
+        self.assertEqual(stmt.locking_clause[0].wait_policy, 2)
+
+    def test_select_is_null(self):
+        query = "SELECT m.* FROM mytable m WHERE m.foo IS NULL"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertIsInstance(stmt.where_clause, nodes.NullTest)
+        self.assertEqual(stmt.where_clause.nulltesttype, 0)
+
+        query = "SELECT m.* FROM mytable m WHERE m.foo IS NOT NULL"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertIsInstance(stmt.where_clause, nodes.NullTest)
+        self.assertEqual(stmt.where_clause.nulltesttype, 1)
+
+    def test_select_range_function(self):
+        query = ("SELECT m.name AS mname, pname "
+                 "FROM manufacturers m, LATERAL get_product_names(m.id) pname")
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.from_clause), 2)
+        second = stmt.from_clause[1]
+        self.assertIsInstance(second, nodes.RangeFunction)
+        self.assertTrue(second.lateral)
+        self.assertEqual(len(second.functions), 1)
+        self.assertEqual(len(second.functions[0]), 2)
+        self.assertIsInstance(second.functions[0][0], nodes.FuncCall)
+
+    def test_select_array(self):
+        query = "SELECT * FROM unnest(ARRAY['a','b','c','d','e','f']) WITH ORDINALITY"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(len(stmt.from_clause), 1)
+        outer = stmt.from_clause[0]
+        self.assertIsInstance(outer, nodes.RangeFunction)
+        self.assertTrue(outer.ordinality)
+        self.assertEqual(len(outer.functions), 1)
+        inner = outer.functions[0][0]
+        self.assertIsInstance(inner, nodes.FuncCall)
+        self.assertEqual(len(inner.args), 1)
+        self.assertIsInstance(inner.args[0], nodes.AArrayExpr)
+        self.assertEqual(len(inner.args[0].elements), 6)
 
 
 class InsertQueriesTest(unittest.TestCase):
@@ -191,6 +330,53 @@ class InsertQueriesTest(unittest.TestCase):
         self.assertEqual(str(stmt.returning_list[0].val.fields[0]), 'id')
         self.assertIsInstance(stmt.returning_list[1], nodes.ResTarget)
         self.assertEqual(str(stmt.returning_list[1].val.fields[0]), 'date')
+
+
+class UpdateQueriesTest(unittest.TestCase):
+
+    def test_update_to_default(self):
+        query = "UPDATE my_table SET the_value = DEFAULT"
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.UpdateStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
+        self.assertIsInstance(stmt.target_list[0].val, nodes.SetToDefault)
+
+    def test_update_array(self):
+        query = ("UPDATE tictactoe "
+                 "SET board[1:3][1:3] = '{{" "," "," "},{" "," "," "},{" "," "," "}}' "
+                 "WHERE game = 1")
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.UpdateStmt)
+        self.assertEqual(len(stmt.target_list), 1)
+        self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
+        indirection = stmt.target_list[0].indirection
+        self.assertEqual(len(indirection), 2)
+        self.assertIsInstance(indirection[0], nodes.AIndices)
+        self.assertIsInstance(indirection[1], nodes.AIndices)
+        self.assertIsInstance(indirection[0].lidx, nodes.AConst)
+        self.assertIsInstance(indirection[0].uidx, nodes.AConst)
+
+    def test_update_multi_assign(self):
+        query = ("UPDATE accounts "
+                 "SET (contact_first_name, contact_last_name) "
+                 "= (SELECT first_name, last_name FROM salesmen "
+                 "WHERE salesmen.id = accounts.sales_id)")
+        stmt = parse(query).pop()
+
+        self.assertIsInstance(stmt, nodes.UpdateStmt)
+        self.assertEqual(len(stmt.target_list), 2)
+        self.assertIsInstance(stmt.target_list[0], nodes.ResTarget)
+        first = stmt.target_list[0]
+        self.assertIsInstance(first, nodes.ResTarget)
+        self.assertEqual(first.name, 'contact_first_name')
+        self.assertIsInstance(first.val, nodes.MultiAssignRef)
+        self.assertEqual(first.val.ncolumns, 2)
+        self.assertEqual(first.val.colno, 1)
+        self.assertIsInstance(first.val.source, nodes.SubLink)
+        self.assertIsInstance(first.val.source.subselect, nodes.SelectStmt)
 
 
 class MultipleQueriesTest(unittest.TestCase):

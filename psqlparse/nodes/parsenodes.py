@@ -284,3 +284,87 @@ class AConst(Node):
 
     def tables(self):
         return set()
+
+
+class TypeCast(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.type_name = build_from_item(obj, 'typeName')
+        self.location = obj.get('location')
+
+
+class TypeName(Node):
+
+    def __init__(self, obj):
+        self.names = build_from_item(obj, 'names')
+        self.type_oid = obj.get('typeOid')
+        self.setof = obj.get('setof')
+        self.pct_type = obj.get('pct_type')
+        self.typmods = build_from_item(obj, 'typmods')
+        self.typemod = obj.get('typemod')
+        self.array_bounds = build_from_item(obj, 'arrayBounds')
+        self.location = obj.get('location')
+
+
+class SortBy(Node):
+
+    def __init__(self, obj):
+        self.node = build_from_item(obj, 'node')
+        self.sortby_dir = obj.get('sortby_dir')
+        self.sortby_nulls = obj.get('sortby_nulls')
+        self.use_op = build_from_item(obj, 'useOp')
+        self.location = obj.get('location')
+
+
+class WindowDef(Node):
+
+    def __init__(self, obj):
+        self.name = obj.get('name')
+        self.refname = obj.get('refname')
+        self.partition_clause = build_from_item(obj, 'partitionClause')
+        self.order_clause = build_from_item(obj, 'orderClause')
+        self.frame_options = obj.get('frameOptions')
+        self.start_offset = build_from_item(obj, 'startOffset')
+        self.end_offset = build_from_item(obj, 'endOffset')
+        self.location = obj.get('location')
+
+
+class LockingClause(Node):
+
+    def __init__(self, obj):
+        self.locked_rels = build_from_item(obj, 'lockedRels')
+        self.strength = build_from_item(obj, 'strength')
+        self.wait_policy = obj.get('waitPolicy')
+
+
+class RangeFunction(Node):
+
+    def __init__(self, obj):
+        self.lateral = obj.get('lateral')
+        self.ordinality = obj.get('ordinality')
+        self.is_rowsfrom = obj.get('is_rowsfrom')
+        self.functions = build_from_item(obj, 'functions')
+        self.alias = build_from_item(obj, 'alias')
+        self.coldeflist = build_from_item(obj, 'coldeflist')
+
+
+class AArrayExpr(Node):
+
+    def __init__(self, obj):
+        self.elements = build_from_item(obj, 'elements')
+        self.location = obj.get('location')
+
+
+class AIndices(Node):
+    def __init__(self, obj):
+        self.lidx = build_from_item(obj, 'lidx')
+        self.uidx = build_from_item(obj, 'uidx')
+
+
+class MultiAssignRef(Node):
+
+    def __init__(self, obj):
+        self.source = build_from_item(obj, 'source')
+        self.colno = obj.get('colno')
+        self.ncolumns = obj.get('ncolumns')
