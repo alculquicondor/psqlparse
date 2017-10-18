@@ -136,8 +136,8 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(target.val.args[0].result, nodes.AConst)
         self.assertIsInstance(target.val.defresult, nodes.AConst)
 
-        query = "SELECT CASE a.value WHEN 0 THEN '1' ELSE '2' END FROM \
-                sometable a"
+        query = ("SELECT CASE a.value WHEN 0 THEN '1' ELSE '2' END FROM "
+                 "sometable a")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(len(stmt.target_list), 1)
@@ -207,9 +207,9 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsNone(target.val.over.order_clause)
         self.assertIsNone(target.val.over.partition_clause)
 
-        query = "SELECT salary, sum(salary)\
-                 OVER (ORDER BY salary)\
-                 FROM empsalary"
+        query = ("SELECT salary, sum(salary) "
+                 "OVER (ORDER BY salary) "
+                 "FROM empsalary")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(len(stmt.target_list), 2)
@@ -220,9 +220,9 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(target.val.over.order_clause[0], nodes.SortBy)
         self.assertIsNone(target.val.over.partition_clause)
 
-        query = "SELECT salary, avg(salary)\
-                 OVER (PARTITION BY depname)\
-                 FROM empsalary"
+        query = ("SELECT salary, avg(salary) "
+                 "OVER (PARTITION BY depname) "
+                 "FROM empsalary")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(len(stmt.target_list), 2)
@@ -281,9 +281,8 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(second.functions[0][0], nodes.FuncCall)
 
     def test_select_array(self):
-        query = "SELECT * FROM\
-                    unnest(ARRAY['a','b','c','d','e','f'])\
-                 WITH ORDINALITY"
+        query = ("SELECT * FROM unnest(ARRAY['a','b','c','d','e','f']) "
+                 "WITH ORDINALITY")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(len(stmt.from_clause), 1)
@@ -355,8 +354,8 @@ class UpdateQueriesTest(unittest.TestCase):
 
     def test_update_array(self):
         query = ("UPDATE tictactoe "
-                 "SET board[1:3][1:3] = '{{" "," "," "},\
-                        {" "," "," "},{" "," "," "}}' "
+                 "SET board[1:3][1:3] = "
+                 "'{{" "," "," "},{" "," "," "},{" "," "," "}}' "
                  "WHERE game = 1")
         stmt = parse(query).pop()
 
