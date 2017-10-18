@@ -47,6 +47,3 @@ class Float(Value):
     @property
     def val(self):
         return self.fval
-
-
-
