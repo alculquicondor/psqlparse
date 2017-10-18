@@ -4,7 +4,9 @@ python:
     - "3.5"
 install:
     - pip install -r requirements.txt
+    - pip install 'pep8==1.7.0'
     - USE_CYTHON=1 python setup.py build_ext --inplace -f install
 # actual test run can be added later
 script:
     - python -m unittest discover --verbose
+    - python -m pep8 .
