@@ -21,6 +21,8 @@ statements = psqlparse.parse('SELECT * from mytable')
 used_tables = statements[0].tables()  # ['my_table']
 ```
 
+`tables` is only available from version 1.0rc1
+
 Development
 -----------
 
