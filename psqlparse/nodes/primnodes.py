@@ -144,3 +144,13 @@ class NullTest(Node):
         self.nulltesttype = obj.get('nulltesttype')
         self.argisrow = obj.get('argisrow')
         self.location = obj.get('location')
+
+
+class RowExpr(Node):
+
+    def __init__(self, obj):
+        self.args = build_from_item(obj, 'args')
+        self.colnames = build_from_item(obj, 'colnames')
+        self.location = obj['location']
+        self.row_format = obj.get('row_format')
+        self.type_id = obj.get('typeId')

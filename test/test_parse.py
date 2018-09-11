@@ -296,6 +296,14 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(inner.args[0], nodes.AArrayExpr)
         self.assertEqual(len(inner.args[0].elements), 6)
 
+    def test_select_where_in_many(self):
+        query = (
+            "SELECT * FROM my_table WHERE (a, b) in (('a', 'b'), ('c', 'd'))")
+        stmt = parse(query).pop()
+        self.assertEqual(2, len(stmt.where_clause.rexpr))
+        for node in stmt.where_clause.rexpr:
+            self.assertIsInstance(node, nodes.RowExpr)
+
 
 class InsertQueriesTest(unittest.TestCase):
 
@@ -502,6 +510,13 @@ class TablesTest(unittest.TestCase):
 
     def test_where_in_expr(self):
         query = "SELECT * FROM my_table WHERE (a, b) in ('a', 'b')"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(stmt.tables(), {'my_table'})
+
+    def test_where_in_expr_many(self):
+        query = (
+            "SELECT * FROM my_table WHERE (a, b) in (('a', 'b'), ('c', 'd'))")
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(stmt.tables(), {'my_table'})

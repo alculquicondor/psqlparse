@@ -4,5 +4,6 @@ from .parsenodes import (SelectStmt, InsertStmt, UpdateStmt, DeleteStmt,
                          TypeCast, TypeName, SortBy, WindowDef, LockingClause,
                          RangeFunction, AArrayExpr, AIndices, MultiAssignRef)
 from .primnodes import (RangeVar, JoinExpr, Alias, IntoClause, BoolExpr,
-                        SubLink, SetToDefault, CaseExpr, CaseWhen, NullTest)
+                        SubLink, SetToDefault, CaseExpr, CaseWhen, NullTest,
+                        RowExpr)
 from .value import Integer, String, Float
