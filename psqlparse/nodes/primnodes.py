@@ -146,6 +146,14 @@ class NullTest(Node):
         self.location = obj.get('location')
 
 
+class BooleanTest(Node):
+
+    def __init__(self, obj):
+        self.arg = build_from_item(obj, 'arg')
+        self.booltesttype = obj.get('booltesttype')
+        self.location = obj.get('location')
+
+
 class RowExpr(Node):
 
     def __init__(self, obj):

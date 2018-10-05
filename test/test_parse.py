@@ -267,6 +267,13 @@ class SelectQueriesTest(unittest.TestCase):
         self.assertIsInstance(stmt.where_clause, nodes.NullTest)
         self.assertEqual(stmt.where_clause.nulltesttype, 1)
 
+    def test_select_is_true(self):
+        query = "SELECT m.* FROM mytable m WHERE m.foo IS TRUE"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertIsInstance(stmt.where_clause, nodes.BooleanTest)
+        self.assertEqual(stmt.where_clause.booltesttype, 0)
+
     def test_select_range_function(self):
         query = ("SELECT m.name AS mname, pname "
                  "FROM manufacturers m, LATERAL get_product_names(m.id) pname")
