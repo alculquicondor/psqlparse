@@ -1,7 +1,7 @@
 .cache
 .coveragerc
-libpg_query-9.5-latest.zip
-libpg_query-9.5-latest/
+libpg_query-10-latest.zip
+libpg_query-10-latest/
 *.so
 psqlparse/parser.c
 build/
@@ -10,3 +10,4 @@ dist/
 *.egg-info
 __pycache__/
 *.pyc
+.DS_Store
