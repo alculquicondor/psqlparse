@@ -19,6 +19,9 @@ Usage
 import psqlparse
 statements = psqlparse.parse('SELECT * from mytable')
 used_tables = statements[0].tables()  # ['my_table']
+
+psqlparse.normalize('SELECT * FROM mytable WHERE col1 = 1')  # 'SELECT * FROM mytable WHERE col1 = $1'
+psqlparse.fingerprint('SELECT * FROM mytable WHERE col1 = 1')  # '0103b9c7e8d0b69386df0c85f27c97f1f83daf9b35'
 ```
 
 `tables` is only available from version 1.0rc1

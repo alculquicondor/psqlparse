@@ -5,8 +5,11 @@ import six
 from .nodes.utils import build_from_obj
 from .exceptions import PSqlParseError
 from .pg_query cimport (pg_query_parse, pg_query_free_parse_result,
-                        pg_query_normalize, pg_query_free_normalize_result,
-                       PgQueryParseResult, PgQueryNormalizeResult)
+                        pg_query_fingerprint, pg_query_normalize,
+                        pg_query_free_normalize_result,
+                        pg_query_free_fingerprint_result,
+                        PgQueryFingerprintResult, PgQueryNormalizeResult,
+                        PgQueryParseResult)
 
 
 def parse_dict(query):
@@ -58,3 +61,26 @@ def normalize(query):
     normalized_query = result.normalized_query.decode('utf8')
     pg_query_free_normalize_result(result)
     return normalized_query
+
+
+def fingerprint(query):
+    cdef bytes encoded_query
+    cdef PgQueryFingerprintResult result
+
+    if isinstance(query, six.text_type):
+        encoded_query = query.encode('utf8')
+    elif isinstance(query, six.binary_type):
+        encoded_query = query
+    else:
+        encoded_query = six.text_type(query).encode('utf8')
+
+    result = pg_query_fingerprint(encoded_query)
+    if result.error:
+        error = PSqlParseError(result.error.message.decode('utf8'),
+                               result.error.lineno, result.error.cursorpos)
+        pg_query_free_fingerprint_result(result)
+        raise error
+
+    hexdigest = result.hexdigest.decode('utf8')
+    pg_query_free_fingerprint_result(result)
+    return hexdigest

@@ -1,1 +1,1 @@
-from .parser import parse, parse_dict, normalize
+from .parser import fingerprint, normalize, parse, parse_dict
