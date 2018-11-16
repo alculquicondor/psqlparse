@@ -5,5 +5,5 @@ from .parsenodes import (SelectStmt, InsertStmt, UpdateStmt, DeleteStmt,
                          RangeFunction, AArrayExpr, AIndices, MultiAssignRef)
 from .primnodes import (RangeVar, JoinExpr, Alias, IntoClause, BoolExpr,
                         SubLink, SetToDefault, CaseExpr, CaseWhen, NullTest,
-                        RowExpr)
+                        BooleanTest, RowExpr)
 from .value import Integer, String, Float
