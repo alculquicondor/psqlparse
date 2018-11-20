@@ -527,3 +527,15 @@ class TablesTest(unittest.TestCase):
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(stmt.tables(), {'my_table'})
+
+    def test_select_target_list(self):
+        query = "SELECT (SELECT * FROM table_one)"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(stmt.tables(), {'table_one'})
+
+    def test_func_call(self):
+        query = "SELECT my_func((select * from table_one))"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, nodes.SelectStmt)
+        self.assertEqual(stmt.tables(), {'table_one'})

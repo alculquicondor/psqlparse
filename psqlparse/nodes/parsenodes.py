@@ -41,7 +41,9 @@ class SelectStmt(Statement):
 
     def tables(self):
         _tables = set()
-
+        if self.target_list:
+            for item in self.target_list:
+                _tables |= item.tables()
         if self.from_clause:
             for item in self.from_clause:
                 _tables |= item.tables()
@@ -209,7 +211,14 @@ class ResTarget(Node):
         self.location = obj.get('location')
 
     def tables(self):
-        return set()
+        _tables = set()
+        if isinstance(self.val, list):
+            for item in self.val:
+                _tables |= item.tables()
+        elif isinstance(self.val, Node):
+            _tables |= self.val.tables()
+
+        return _tables
 
 
 class ColumnRef(Node):
@@ -237,7 +246,11 @@ class FuncCall(Node):
         self.location = obj.get('location')
 
     def tables(self):
-        return set()
+        _tables = set()
+        if self.args:
+            for item in self.args:
+                _tables |= item.tables()
+        return _tables
 
 
 class AStar(Node):
