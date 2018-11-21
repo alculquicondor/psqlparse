@@ -1,8 +1,8 @@
 import unittest
 
-from psqlparse import parse
+from psqlparse import nodes, parse
 from psqlparse.exceptions import PSqlParseError
-from psqlparse import nodes
+from psqlparse.nodes import TruncateStmt
 
 
 class SelectQueriesTest(unittest.TestCase):
@@ -404,6 +404,46 @@ class UpdateQueriesTest(unittest.TestCase):
         self.assertIsInstance(first.val.source.subselect, nodes.SelectStmt)
 
 
+class TruncateQueriesTest(unittest.TestCase):
+
+    def test_simple(self):
+        query = "TRUNCATE TABLE my_table"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, TruncateStmt)
+        self.assertEqual(stmt.behavior, 0)
+        self.assertIs(stmt.restart_seqs, False)
+
+    def test_multiple_only(self):
+        query = "TRUNCATE ONLY table_one, table_two *, table_three"
+        stmt = parse(query).pop()
+        self.assertIsInstance(stmt, TruncateStmt)
+        self.assertEqual(stmt.behavior, 0)
+        self.assertIs(stmt.restart_seqs, False)
+        self.assertEqual(stmt.relations[0].inh_opt, 0)
+        self.assertEqual(stmt.relations[1].inh_opt, 1)
+        self.assertEqual(stmt.relations[2].inh_opt, 2)
+
+    def test_restart_identity(self):
+        query = "TRUNCATE TABLE my_table RESTART IDENTITY"
+        stmt = parse(query).pop()
+        self.assertIs(stmt.restart_seqs, True)
+
+    def test_continue_identity(self):
+        query = "TRUNCATE TABLE my_table CONTINUE IDENTITY"
+        stmt = parse(query).pop()
+        self.assertIs(stmt.restart_seqs, False)
+
+    def test_cascade(self):
+        query = "TRUNCATE TABLE my_table CASCADE"
+        stmt = parse(query).pop()
+        self.assertIs(stmt.behavior, 1)
+
+    def test_restrict(self):
+        query = "TRUNCATE TABLE my_table RESTRICT"
+        stmt = parse(query).pop()
+        self.assertIs(stmt.behavior, 0)
+
+
 class MultipleQueriesTest(unittest.TestCase):
 
     def test_has_insert_and_select_statement(self):
@@ -507,6 +547,11 @@ class TablesTest(unittest.TestCase):
         stmt = parse(query).pop()
         self.assertEqual(stmt.tables(), {'dataset', 'table_one',
                                          'table_two'})
+
+    def test_truncate(self):
+        query = "TRUNCATE TABLE my_table, other_table"
+        stmt = parse(query).pop()
+        self.assertEqual(stmt.tables(), {'my_table', 'other_table'})
 
     def test_select_union(self):
         query = "select * FROM table_one UNION select * FROM table_two"

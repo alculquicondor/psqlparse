@@ -132,6 +132,25 @@ class DeleteStmt(Statement):
         return _tables
 
 
+class TruncateStmt(Statement):
+
+    statement = 'TRUNCATE'
+
+    def __init__(self, obj):
+        self.relations = build_from_item(obj, 'relations')
+        self.behavior = obj.get('behavior', 0)
+        self.restart_seqs = obj.get('restart_seqs', False)
+
+    def tables(self):
+        _tables = set()
+
+        if self.relations:
+            for relation in self.relations:
+                _tables |= relation.tables()
+
+        return _tables
+
+
 class WithClause(Node):
 
     def __init__(self, obj):
