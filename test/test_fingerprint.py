@@ -12,5 +12,5 @@ class FingerprintTest(unittest.TestCase):
         query3 = """SELECT *
                     FROM mytable
                     WHERE col1 = 2"""
-        assert fingerprint(query1) == fingerprint(query2)
-        assert fingerprint(query1) == fingerprint(query3)
+        self.assertEqual(fingerprint(query1), fingerprint(query2))
+        self.assertEqual(fingerprint(query1), fingerprint(query3))
