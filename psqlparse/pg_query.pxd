@@ -20,3 +20,11 @@ cdef extern from "pg_query.h":
 
     PgQueryFingerprintResult pg_query_fingerprint(const char* input)
     void pg_query_free_fingerprint_result(PgQueryFingerprintResult result)
+
+    ctypedef struct PgQueryNormalizeResult:
+        char *normalized_query
+        PgQueryError *error
+
+
+    PgQueryNormalizeResult pg_query_normalize(const char* input)
+    void pg_query_free_normalize_result(PgQueryNormalizeResult result)

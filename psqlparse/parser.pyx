@@ -7,10 +7,13 @@ from .exceptions import PSqlParseError
 from .pg_query cimport (
     pg_query_parse,
     pg_query_fingerprint,
+    pg_query_normalize,
     pg_query_free_parse_result,
     pg_query_free_fingerprint_result,
+    pg_query_free_normalize_result,
     PgQueryParseResult,
     PgQueryFingerprintResult,
+    PgQueryNormalizeResult,
 )
 
 
@@ -56,3 +59,16 @@ def fingerprint(query):
     hexdigest = result.hexdigest.decode('utf-8')
     pg_query_free_fingerprint_result(result)
     return hexdigest
+
+def normalize(query):
+    cdef bytes encoded_query = _encode_query(query)
+    cdef PgQueryNormalizeResult result
+    result = pg_query_normalize(encoded_query)
+    if result.error:
+        error = PSqlParseError(result.error.message.decode('utf8'),
+                               result.error.lineno, result.error.cursorpos)
+        pg_query_free_normalize_result(result)
+        raise error
+    normalized = result.normalized_query.decode('utf-8')
+    pg_query_free_normalize_result(result)
+    return normalized
