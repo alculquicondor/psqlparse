@@ -13,6 +13,7 @@ from .pg_query cimport (
     PgQueryFingerprintResult,
 )
 
+
 def _encode_query(query):
     if isinstance(query, six.text_type):
         return query.encode('utf8')
@@ -20,6 +21,7 @@ def _encode_query(query):
         return query
     else:
         return six.text_type(query).encode('utf8')
+
 
 def parse_dict(query):
     cdef bytes encoded_query = _encode_query(query)
@@ -40,6 +42,7 @@ def parse_dict(query):
 
 def parse(query):
     return [build_from_obj(obj) for obj in parse_dict(query)]
+
 
 def fingerprint(query):
     cdef bytes encoded_query = _encode_query(query)

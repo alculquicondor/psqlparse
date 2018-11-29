@@ -546,6 +546,16 @@ class TablesTest(unittest.TestCase):
             '018e1acac181c6d28f4a923392cf1c4eda49ee4cd2'
         )
         self.assertEqual(
+            fingerprint("SELECT 1"),
+            fingerprint("select 1"),
+        )
+
+        self.assertEqual(
+            fingerprint("SELECT 1"),
+            fingerprint("select '1'"),
+        )
+
+        self.assertEqual(
             fingerprint("SELECT '1' from t where id = 1"),
-            '01aac869dd1cee3601720bbc21f9e99a4d5208b656'
+            "SELECT '1' from t where id = 50"
         )
