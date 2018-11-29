@@ -4,6 +4,7 @@ psqlparse
 
 This Python module  uses the [libpg\_query](https://github.com/lfittl/libpg_query) to parse SQL
 queries and return the internal PostgreSQL parsetree.
+Can also be used for query fingerprinting.
 
 Installation
 ------------
@@ -19,6 +20,8 @@ Usage
 import psqlparse
 statements = psqlparse.parse('SELECT * from mytable')
 used_tables = statements[0].tables()  # ['my_table']
+hexdigest = psqlparse.fingerprint('SELECT 1')
+
 ```
 
 `tables` is only available from version 1.0rc1
