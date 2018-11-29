@@ -557,5 +557,5 @@ class TablesTest(unittest.TestCase):
 
         self.assertEqual(
             fingerprint("SELECT '1' from t where id = 1"),
-            "SELECT '1' from t where id = 50"
+            fingerprint("SELECT '1' from t where id = 50")
         )
