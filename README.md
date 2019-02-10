@@ -46,7 +46,8 @@ USE_CYTHON=1 python setup.py build_ext --inplace
 pytest
 ```
 
-Contributors
+Maintainers
 ------------
 
 - [Aldo Culquicondor](https://github.com/alculquicondor/)
+- [Kevin Zúñiga](https://github.com/kevinzg/)
