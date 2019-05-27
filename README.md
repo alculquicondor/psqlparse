@@ -26,6 +26,12 @@ used_tables = statements[0].tables()  # ['my_table']
 Development
 -----------
 
+0. Update dependencies
+
+```shell
+git submodule update --init
+```
+
 1. Install requirements:
 
 ```shell
