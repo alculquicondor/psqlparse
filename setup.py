@@ -40,7 +40,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='psqlparse',
-      version='1.0-rc6',
+      version='1.0-rc7',
       url='https://github.com/alculquicondor/psqlparse',
       author='Aldo Culquicondor',
       author_email='aldo@amigocloud.com',
