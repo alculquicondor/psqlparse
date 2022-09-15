@@ -2,6 +2,8 @@ psqlparse
 =========
 [![Build Status](https://travis-ci.org/alculquicondor/psqlparse.svg?branch=master)](https://travis-ci.org/alculquicondor/psqlparse)
 
+**This project is not maintained anymore**. If you would like to maintain it, send me a DM in twitter @alculquicondor.
+
 This Python module  uses the [libpg\_query](https://github.com/lfittl/libpg_query) to parse SQL
 queries and return the internal PostgreSQL parsetree.
 
