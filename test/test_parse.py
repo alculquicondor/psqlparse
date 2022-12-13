@@ -1,6 +1,6 @@
 import unittest
 
-from psqlparse import parse
+from psqlparse import parse, fingerprint, normalize
 from psqlparse.exceptions import PSqlParseError
 from psqlparse import nodes
 
@@ -539,3 +539,37 @@ class TablesTest(unittest.TestCase):
         stmt = parse(query).pop()
         self.assertIsInstance(stmt, nodes.SelectStmt)
         self.assertEqual(stmt.tables(), {'table_one'})
+
+    def test_fingerprint(self):
+        self.assertEqual(
+            fingerprint("SELECT 1"),
+            '018e1acac181c6d28f4a923392cf1c4eda49ee4cd2'
+        )
+        self.assertEqual(
+            fingerprint("SELECT 1"),
+            fingerprint("select 1"),
+        )
+
+        self.assertEqual(
+            fingerprint("SELECT 1"),
+            fingerprint("select '1'"),
+        )
+
+        self.assertEqual(
+            fingerprint("SELECT '1' from t where id = 1"),
+            fingerprint("SELECT '1' from t where id = 50")
+        )
+
+    def test_normalize(self):
+        self.assertEqual(
+            normalize("SELECT x from y"),
+            normalize("SELECT x from y"),
+        )
+        self.assertEqual(
+            normalize("SELECT 10"),
+            normalize("SELECT 1")
+        )
+        self.assertEqual(
+            normalize("SELECT x FROM y WHERE 5"),
+            "SELECT x FROM y WHERE $1"
+        )
